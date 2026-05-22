@@ -1,0 +1,10 @@
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; min-height: 100vh; }
+
+/* Utilitárias equivalentes às classes Tailwind usadas no componente */
+.min-h-screen { min-height: 100vh; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.bg-gradient-to-br { background: linear-gradient(135deg, #e8f5f0 0%, #f0eaf8 50%, #ffffff 100%); }
