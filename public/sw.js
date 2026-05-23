@@ -7,7 +7,6 @@ const urlsToCache = [
   '/src/index.css'
 ];
 
-// Instalar o service worker e fazer cache dos arquivos
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -18,7 +17,6 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Buscar do cache quando offline
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
@@ -28,7 +26,6 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Atualizar o service worker removendo caches antigos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
