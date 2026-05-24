@@ -1,23 +1,22 @@
 {
   "name": "MãeGuia DF",
   "short_name": "MãeGuia",
-  "description": "Plataforma de cuidado e direitos para mães atípicas do Distrito Federal",
+  "description": "Plataforma de cuidado e direitos para mães atípicas no DF",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f6f8f7",
   "theme_color": "#3d9b7a",
-  "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icon-192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-512.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
