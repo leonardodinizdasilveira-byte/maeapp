@@ -513,7 +513,7 @@ _Enviado via MãeGuia DF_ 💜`;
         .mobile-menu-drawer{position:fixed; top:0; left:0; bottom:0; width:280px; background:white; z-index:201; box-shadow:2px 0 12px rgba(0,0,0,0.15); animation:slideIn 0.3s; overflow-y:auto;}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
-        .hamburger{display:none; position:fixed; top:16px; left:16px; z-index:150; background:white; border:1.5px solid #e0e7ef; border-radius:12px; padding:10px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+        .hamburger{display:none; position:fixed; top:16px; right:16px; z-index:150; background:white; border:1.5px solid #e0e7ef; border-radius:12px; padding:10px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);}
         @media(max-width:768px){.hamburger{display:flex;}}
       `}</style>
 
@@ -522,9 +522,9 @@ _Enviado via MãeGuia DF_ 💜`;
         <div className="alarme-modal">
           <div style={{background:"white", borderRadius:20, padding:32, maxWidth:380, textAlign:"center", boxShadow:"0 8px 40px rgba(0,0,0,0.3)"}}>
             <div style={{fontSize:48, marginBottom:12}}>🔔</div>
-            <h2 style={{color:"var(--danger)", fontWeight:800, fontSize:22, marginBottom:8}}>ATENÇÃO!</h2>
-            <p style={{fontSize:16, color:"#333", marginBottom:20, lineHeight:1.6}}>{alarmeMsg}</p>
-            <button className="btn-mint" onClick={pararAlarme} style={{width:"100%", padding:"14px", fontSize:16}}>
+            <h2 style={{color:"var(--danger)", fontWeight:800, fontSize:32, marginBottom:8}}>ATENÇÃO!</h2>
+            <p style={{fontSize:32, color:"#333", marginBottom:20, lineHeight:1.6}}>{alarmeMsg}</p>
+            <button className="btn-mint" onClick={pararAlarme} style={{width:"100%", padding:"14px", fontSize:20}}>
               ✅ Desligar Alarme / Marcar como Ministrado
             </button>
           </div>
@@ -549,7 +549,7 @@ _Enviado via MãeGuia DF_ 💜`;
                     <Heart size={20} color="white" />
                   </div>
                   <div>
-                    <p style={{fontWeight:800, fontSize:15, color:"var(--mint)", lineHeight:1, margin:0}}>MãeGuia</p>
+                    <p style={{fontWeight:800, fontSize:17, color:"var(--mint)", lineHeight:1, margin:0}}>MãeGuia</p>
                     <p style={{fontSize:11, color:"var(--lav)", fontWeight:700, margin:0}}>DF</p>
                   </div>
                 </div>
@@ -562,7 +562,7 @@ _Enviado via MãeGuia DF_ 💜`;
               {filhos.length > 0 && (
                 <div style={{background:"var(--mint-light)", borderRadius:12, padding:"10px 12px", marginBottom:20}}>
                   <p style={{fontSize:11, color:"var(--mint)", fontWeight:700, marginBottom:6}}>FILHO(A) ATIVO</p>
-                  <select className="select-field" value={filhoSelecionado} onChange={e=>{setFilhoSelecionado(+e.target.value);setMobileMenu(false);}} style={{background:"transparent", border:"none", padding:0, fontSize:14, fontWeight:700, color:"#333"}}>
+                  <select className="select-field" value={filhoSelecionado} onChange={e=>{setFilhoSelecionado(+e.target.value);setMobileMenu(false);}} style={{background:"transparent", border:"none", padding:0, fontSize:32, fontWeight:700, color:"#333"}}>
                     {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
                   </select>
                 </div>
@@ -571,14 +571,14 @@ _Enviado via MãeGuia DF_ 💜`;
               {/* Menu */}
               <nav style={{display:"flex", flexDirection:"column", gap:4, marginBottom:20}}>
                 {navItems.map(n => (
-                  <button key={n.id} className={`nav-item ${tela===n.id?"active":""}`} onClick={()=>{setTela(n.id);setMobileMenu(false);}} style={{display:"flex", alignItems:"center", gap:10, padding:"12px 14px", background:"none", border:"none", textAlign:"left", fontSize:15, color:tela===n.id?"var(--mint)":"#1a1a1a", width:"100%", fontFamily:"inherit"}}>
+                  <button key={n.id} className={`nav-item ${tela===n.id?"active":""}`} onClick={()=>{setTela(n.id);setMobileMenu(false);}} style={{display:"flex", alignItems:"center", gap:10, padding:"12px 14px", background:"none", border:"none", textAlign:"left", fontSize:17, color:tela===n.id?"var(--mint)":"#1a1a1a", width:"100%", fontFamily:"inherit"}}>
                     {n.icon} {n.label}
                   </button>
                 ))}
               </nav>
 
               {/* Botão sair */}
-              <button onClick={()=>{fazerLogout();setMobileMenu(false);}} style={{display:"flex", alignItems:"center", gap:8, background:"#fff0ef", color:"var(--danger)", border:"1.5px solid #fcc", borderRadius:12, padding:"10px 14px", fontWeight:700, cursor:"pointer", fontSize:14, width:"100%", fontFamily:"inherit"}}>
+              <button onClick={()=>{fazerLogout();setMobileMenu(false);}} style={{display:"flex", alignItems:"center", justifyContent:"center", gap:8, background:"#fff0ef", color:"var(--danger)", border:"1.5px solid #fcc", borderRadius:12, padding:"10px 14px", fontWeight:700, cursor:"pointer", fontSize:32, width:"100%", fontFamily:"inherit"}}>
                 <LogOut size={16}/> Sair
               </button>
             </div>
@@ -594,18 +594,18 @@ _Enviado via MãeGuia DF_ 💜`;
               <Heart size={20} color="white" />
             </div>
             <div>
-              <p style={{fontWeight:800, fontSize:15, color:"var(--mint)", lineHeight:1}}>MãeGuia</p>
-              <p style={{fontSize:15, color:"var(--lav)", fontWeight:700}}>DF</p>
+              <p style={{fontWeight:800, fontSize:17, color:"var(--mint)", lineHeight:1}}>MãeGuia</p>
+              <p style={{fontSize:17, color:"var(--lav)", fontWeight:700}}>DF</p>
             </div>
           </div>
-          <p style={{fontSize:16, color:"#1a1a1a", marginTop:8}}>Olá, {mae.nome.split(" ")[0]} 💜</p>
+          <p style={{fontSize:32, color:"#1a1a1a", marginTop:8}}>Olá, {mae.nome.split(" ")[0]} 💜</p>
         </div>
 
         {/* Seletor de filho */}
         {filhos.length > 0 && (
           <div style={{background:"var(--mint-light)", borderRadius:12, padding:"10px 12px", marginBottom:20}}>
-            <p style={{fontSize:15, color:"var(--mint)", fontWeight:700, marginBottom:6}}>FILHO(A) ATIVO</p>
-            <select className="select-field" value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"transparent", border:"none", padding:0, fontSize:16, fontWeight:700, color:"#333"}}>
+            <p style={{fontSize:17, color:"var(--mint)", fontWeight:700, marginBottom:6}}>FILHO(A) ATIVO</p>
+            <select className="select-field" value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"transparent", border:"none", padding:0, fontSize:32, fontWeight:700, color:"#333"}}>
               {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
             </select>
           </div>
@@ -613,7 +613,7 @@ _Enviado via MãeGuia DF_ 💜`;
 
         <nav style={{flex:1, display:"flex", flexDirection:"column", gap:4}}>
           {navItems.map(n => (
-            <button key={n.id} className={`nav-item ${tela===n.id?"active":""}`} onClick={()=>{setTela(n.id);setMobileMenu(false);}} style={{display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", textAlign:"left", fontSize:16, color:tela===n.id?"var(--mint)":"#555", width:"100%", fontFamily:"inherit"}}>
+            <button key={n.id} className={`nav-item ${tela===n.id?"active":""}`} onClick={()=>{setTela(n.id);setMobileMenu(false);}} style={{display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", textAlign:"left", fontSize:32, color:tela===n.id?"var(--mint)":"#555", width:"100%", fontFamily:"inherit"}}>
               {n.icon} {n.label}
             </button>
           ))}
@@ -650,7 +650,7 @@ function CampoInput({ icon, label, dica, erro, sufixo, children }) {
   const [focado, setFocado] = useState(false);
   return (
     <div>
-      <label style={{display:"block", fontSize:16, fontWeight:600, color:"#333", marginBottom:6, marginLeft:4, letterSpacing:0.2}}>{label}</label>
+      <label style={{display:"block", fontSize:32, fontWeight:600, color:"#333", marginBottom:6, marginLeft:4, letterSpacing:0.2}}>{label}</label>
       <div
         onFocus={()=>setFocado(true)} onBlur={()=>setFocado(false)}
         style={{
@@ -664,19 +664,19 @@ function CampoInput({ icon, label, dica, erro, sufixo, children }) {
         <div style={{flex:1}}>{children}</div>
         {sufixo}
       </div>
-      {dica && !erro && <p style={{fontSize:15, color:"#666", marginTop:5, marginLeft:6, lineHeight:1.4}}>{dica}</p>}
-      {erro && <p style={{color:"#c0392b", fontSize:16, marginTop:5, marginLeft:6, fontWeight:600}}>⚠ {erro}</p>}
+      {dica && !erro && <p style={{fontSize:17, color:"#666", marginTop:5, marginLeft:6, lineHeight:1.4}}>{dica}</p>}
+      {erro && <p style={{color:"#c0392b", fontSize:32, marginTop:5, marginLeft:6, fontWeight:600}}>⚠ {erro}</p>}
     </div>
   );
 }
 
-const inputBare = {width:"100%", border:"none", outline:"none", background:"transparent", fontSize:16, fontFamily:"inherit", color:"#1a1a1a", padding:0};
+const inputBare = {width:"100%", border:"none", outline:"none", background:"transparent", fontSize:32, fontFamily:"inherit", color:"#1a1a1a", padding:0};
 
 function CampoTextarea({ icon, label, dica, cor="#3d9b7a", rows=4, value, onChange, placeholder }) {
   const [focado, setFocado] = useState(false);
   return (
     <div>
-      <label style={{display:"flex", alignItems:"center", gap:6, fontSize:16, fontWeight:600, color:"#333", marginBottom:6, marginLeft:4, letterSpacing:0.2}}>
+      <label style={{display:"flex", alignItems:"center", gap:6, fontSize:32, fontWeight:600, color:"#333", marginBottom:6, marginLeft:4, letterSpacing:0.2}}>
         {icon && <span style={{color:cor, display:"flex"}}>{icon}</span>}{label}
       </label>
       <div
@@ -686,9 +686,9 @@ function CampoTextarea({ icon, label, dica, cor="#3d9b7a", rows=4, value, onChan
           boxShadow: focado ? `inset 0 1px 4px rgba(0,0,0,0.04), 0 0 0 3px ${cor}1a` : "0 1px 2px rgba(0,0,0,0.03)",
           transition:"all .25s ease"}}>
         <textarea rows={rows} value={value} onChange={onChange} placeholder={placeholder}
-          style={{width:"100%", border:"none", outline:"none", background:"transparent", fontSize:16, fontFamily:"inherit", color:"#1a1a1a", resize:"vertical", lineHeight:1.6}}/>
+          style={{width:"100%", border:"none", outline:"none", background:"transparent", fontSize:32, fontFamily:"inherit", color:"#1a1a1a", resize:"vertical", lineHeight:1.6}}/>
       </div>
-      {dica && <p style={{fontSize:15, color:"#666", marginTop:5, marginLeft:6, lineHeight:1.4}}>{dica}</p>}
+      {dica && <p style={{fontSize:17, color:"#666", marginTop:5, marginLeft:6, lineHeight:1.4}}>{dica}</p>}
     </div>
   );
 }
@@ -703,8 +703,8 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
           <div style={{width:60, height:60, background:"linear-gradient(135deg,#3d9b7a,#7c5cbf)", borderRadius:20, display:"inline-flex", alignItems:"center", justifyContent:"center", marginBottom:12, boxShadow:"0 6px 20px rgba(61,155,122,0.25)"}}>
             <Heart size={30} color="white" />
           </div>
-          <h1 style={{fontWeight:800, fontSize:26, color:"#2f7d62", margin:0}}>MãeGuia DF</h1>
-          <p style={{color:"#7c5cbf", fontWeight:600, marginTop:2, fontSize:14}}>Sua plataforma de cuidado e direitos</p>
+          <h1 style={{fontWeight:800, fontSize:30, color:"#2f7d62", margin:0}}>MãeGuia DF</h1>
+          <p style={{color:"#7c5cbf", fontWeight:600, marginTop:2, fontSize:20}}>Sua plataforma de cuidado e direitos</p>
         </div>
 
         {/* Indicador de progresso */}
@@ -718,7 +718,7 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
           <div>
             <div style={{marginBottom:22, padding:"0 4px"}}>
               <h2 style={{fontWeight:800, fontSize:21, color:"#1f2937", marginBottom:4}}>Bem-vinda, Mãe Guerreira! 💜</h2>
-              <p style={{color:"#1a1a1a", fontSize:15, lineHeight:1.5}}>Vamos criar seu perfil. Seus dados ficam seguros e ajudam a personalizar os alertas.</p>
+              <p style={{color:"#1a1a1a", fontSize:17, lineHeight:1.5}}>Vamos criar seu perfil. Seus dados ficam seguros e ajudam a personalizar os alertas.</p>
             </div>
 
             <div style={{display:"flex", flexDirection:"column", gap:16}}>
@@ -741,7 +741,7 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
                 </select>
               </CampoInput>
 
-              <button onClick={avancar} style={{width:"100%", marginTop:6, padding:"17px", fontSize:15, fontWeight:800, letterSpacing:0.5, textTransform:"uppercase", color:"white", border:"none", borderRadius:18, cursor:"pointer", fontFamily:"inherit", background:"linear-gradient(135deg,#3d9b7a,#5bb89a)", boxShadow:"0 6px 18px rgba(61,155,122,0.32)", transition:"transform .15s"}}
+              <button onClick={avancar} style={{width:"100%", marginTop:6, padding:"17px", fontSize:17, fontWeight:800, letterSpacing:0.5, textTransform:"uppercase", color:"white", border:"none", borderRadius:18, cursor:"pointer", fontFamily:"inherit", background:"linear-gradient(135deg,#3d9b7a,#5bb89a)", boxShadow:"0 6px 18px rgba(61,155,122,0.32)", transition:"transform .15s"}}
                 onMouseDown={e=>e.currentTarget.style.transform="scale(0.98)"} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}>
                 Continuar → Cadastrar Filhos
               </button>
@@ -753,7 +753,7 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
           <div>
             <div style={{marginBottom:18, padding:"0 4px"}}>
               <h2 style={{fontWeight:800, fontSize:21, color:"#1f2937", marginBottom:4}}>Agora, seus filhos(as) 👶</h2>
-              <p style={{color:"#1a1a1a", fontSize:15, lineHeight:1.5}}>Adicione um ou mais filhos. Você poderá gerenciar cada um separadamente.</p>
+              <p style={{color:"#1a1a1a", fontSize:17, lineHeight:1.5}}>Adicione um ou mais filhos. Você poderá gerenciar cada um separadamente.</p>
             </div>
 
             {/* Filhos já adicionados */}
@@ -764,8 +764,8 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
                     <Baby size={20} color="#3d9b7a"/>
                   </div>
                   <div>
-                    <p style={{fontWeight:700, color:"#2f7d62", margin:0, fontSize:15}}>{f.nome}, {f.idade} anos</p>
-                    <p style={{fontSize:16, color:"#1a1a1a", margin:0}}>{f.diagnosticos.join(", ") || "Diagnóstico a definir"}</p>
+                    <p style={{fontWeight:700, color:"#2f7d62", margin:0, fontSize:17}}>{f.nome}, {f.idade} anos</p>
+                    <p style={{fontSize:32, color:"#1a1a1a", margin:0}}>{f.diagnosticos.join(", ") || "Diagnóstico a definir"}</p>
                   </div>
                 </div>
                 <button onClick={()=>setFilhos(prev=>prev.filter((_,idx)=>idx!==i))} style={{background:"#fef0f0", border:"none", borderRadius:10, padding:"8px", cursor:"pointer", color:"#c0392b", display:"flex"}}>
@@ -784,14 +784,14 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
                   <input style={inputBare} type="number" placeholder="Idade em anos" value={novoFilho.idade} onChange={e=>setNovoFilho(p=>({...p,idade:e.target.value}))} min="0" max="25"/>
                 </CampoInput>
                 <div>
-                  <p style={{fontSize:16, fontWeight:600, color:"#333", marginBottom:6, marginLeft:4, letterSpacing:0.2}}>DIAGNÓSTICO(S)</p>
-                  <p style={{fontSize:13, color:"#666", marginBottom:10, marginLeft:4}}>Selecione um ou mais (múltipla escolha):</p>
+                  <p style={{fontSize:32, fontWeight:600, color:"#333", marginBottom:6, marginLeft:4, letterSpacing:0.2}}>DIAGNÓSTICO(S)</p>
+                  <p style={{fontSize:17, color:"#666", marginBottom:10, marginLeft:4}}>Selecione um ou mais (múltipla escolha):</p>
                   <div style={{maxHeight:240, overflowY:"auto", border:"1.5px solid #e5e7eb", borderRadius:14, padding:10, background:"#fafbfa"}}>
                     <div style={{display:"flex", flexDirection:"column", gap:4}}>
                       {DIAGNOSTICOS.map(d => {
                         const on = novoFilho.diagnosticos.includes(d);
                         return (
-                          <button key={d} onClick={()=>toggleDiag(d)} style={{display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, fontSize:15, fontWeight:on?700:600, cursor:"pointer", border:"none", fontFamily:"inherit", transition:"all .15s", background:on?"#e8f5f0":"white", color:on?"#2f7d62":"#333", textAlign:"left", width:"100%"}}>
+                          <button key={d} onClick={()=>toggleDiag(d)} style={{display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, fontSize:17, fontWeight:on?700:600, cursor:"pointer", border:"none", fontFamily:"inherit", transition:"all .15s", background:on?"#e8f5f0":"white", color:on?"#2f7d62":"#333", textAlign:"left", width:"100%"}}>
                             <div style={{width:22, height:22, borderRadius:6, border:`2px solid ${on?"#3d9b7a":"#d1d5db"}`, background:on?"#3d9b7a":"white", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all .15s"}}>
                               {on && <Check size={15} color="white" strokeWidth={3}/>}
                             </div>
@@ -802,13 +802,13 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
                     </div>
                   </div>
                 </div>
-                <button onClick={adicionarFilho} style={{width:"100%", padding:"13px", fontSize:16, fontWeight:700, color:"#3d9b7a", background:"#fff", border:"1.5px solid #3d9b7a", borderRadius:14, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:6}}>
+                <button onClick={adicionarFilho} style={{width:"100%", padding:"13px", fontSize:32, fontWeight:700, color:"#3d9b7a", background:"#fff", border:"1.5px solid #3d9b7a", borderRadius:14, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:6}}>
                   <Plus size={16}/> Adicionar filho(a)
                 </button>
               </div>
             </div>
 
-            <button onClick={finalizar} disabled={filhos.length===0&&!novoFilho.nome} style={{width:"100%", padding:"17px", fontSize:15, fontWeight:800, letterSpacing:0.5, textTransform:"uppercase", color:"white", border:"none", borderRadius:18, cursor:"pointer", fontFamily:"inherit", background:"linear-gradient(135deg,#3d9b7a,#5bb89a)", boxShadow:"0 6px 18px rgba(61,155,122,0.32)", opacity: (filhos.length===0&&!novoFilho.nome) ? 0.45 : 1, transition:"opacity .2s"}}>
+            <button onClick={finalizar} disabled={filhos.length===0&&!novoFilho.nome} style={{width:"100%", padding:"17px", fontSize:17, fontWeight:800, letterSpacing:0.5, textTransform:"uppercase", color:"white", border:"none", borderRadius:18, cursor:"pointer", fontFamily:"inherit", background:"linear-gradient(135deg,#3d9b7a,#5bb89a)", boxShadow:"0 6px 18px rgba(61,155,122,0.32)", opacity: (filhos.length===0&&!novoFilho.nome) ? 0.45 : 1, transition:"opacity .2s"}}>
               Salvar Cadastro e Entrar ✨
             </button>
           </div>
@@ -831,16 +831,16 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
     <div>
       <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:28, flexWrap:"wrap", gap:12}}>
         <div>
-          <h1 style={{fontWeight:800, fontSize:24, color:"#222", margin:0}}>Dashboard</h1>
-          <p style={{color:"#1a1a1a", fontSize:15}}>{hoje.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</p>
+          <h1 style={{fontWeight:800, fontSize:32, color:"#222", margin:0}}>Dashboard</h1>
+          <p style={{color:"#1a1a1a", fontSize:17}}>{hoje.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</p>
         </div>
         <div style={{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap"}}>
           {filhos.length > 1 && (
-            <select value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"var(--mint-light)", border:"1.5px solid var(--mint-mid)", borderRadius:12, padding:"8px 14px", fontWeight:700, fontSize:16, color:"#3d9b7a", cursor:"pointer", fontFamily:"inherit"}}>
+            <select value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"var(--mint-light)", border:"1.5px solid var(--mint-mid)", borderRadius:12, padding:"8px 14px", fontWeight:700, fontSize:32, color:"#3d9b7a", cursor:"pointer", fontFamily:"inherit"}}>
               {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
             </select>
           )}
-          <button onClick={fazerLogout} style={{display:"flex", alignItems:"center", gap:6, background:"#fff0ef", color:"#c0392b", border:"1.5px solid #fcc", borderRadius:12, padding:"8px 16px", fontWeight:700, cursor:"pointer", fontSize:15, fontFamily:"inherit"}}>
+          <button onClick={fazerLogout} style={{display:"flex", alignItems:"center", gap:6, background:"#fff0ef", color:"#c0392b", border:"1.5px solid #fcc", borderRadius:12, padding:"8px 16px", fontWeight:700, cursor:"pointer", fontSize:17, fontFamily:"inherit"}}>
             <LogOut size={15}/> Sair
           </button>
         </div>
@@ -854,8 +854,8 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
               <Baby size={28} color="white" />
             </div>
             <div style={{flex:1}}>
-              <h2 style={{fontWeight:800, fontSize:20, margin:0, color:"#222"}}>{filho.nome}</h2>
-              <p style={{margin:"2px 0", color:"#1a1a1a", fontSize:15}}>{filho.idade} anos • {filho.diagnosticos.join(", ")}</p>
+              <h2 style={{fontWeight:800, fontSize:32, margin:0, color:"#222"}}>{filho.nome}</h2>
+              <p style={{margin:"2px 0", color:"#1a1a1a", fontSize:17}}>{filho.idade} anos • {filho.diagnosticos.join(", ")}</p>
               <div style={{display:"flex", flexWrap:"wrap", gap:6, marginTop:6}}>
                 {filho.diagnosticos.map(d=><span key={d} className="tag">{d}</span>)}
               </div>
@@ -863,10 +863,10 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
             <div style={{background:"#e8f5f0", border:"1.5px solid #b8e0d2", borderRadius:12, padding:"10px 16px", minWidth:200}}>
               <div style={{display:"flex", alignItems:"center", gap:6, marginBottom:4}}>
                 <Activity size={14} color="#3d9b7a"/>
-                <span style={{fontSize:15, fontWeight:800, color:"#3d9b7a"}}>STATUS DO SISTEMA</span>
+                <span style={{fontSize:17, fontWeight:800, color:"#3d9b7a"}}>STATUS DO SISTEMA</span>
               </div>
-              <p style={{fontSize:16, color:"#1a1a1a", margin:0, lineHeight:1.5}}>✅ Gatilhos ativos. Alertas via WhatsApp</p>
-              <p style={{fontSize:16, fontWeight:700, color:"#3d9b7a", margin:"2px 0 0"}}>{mae.celular}</p>
+              <p style={{fontSize:32, color:"#1a1a1a", margin:0, lineHeight:1.5}}>✅ Gatilhos ativos. Alertas via WhatsApp</p>
+              <p style={{fontSize:32, fontWeight:700, color:"#3d9b7a", margin:"2px 0 0"}}>{mae.celular}</p>
             </div>
           </div>
 
@@ -874,7 +874,7 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
           <div className="card" style={{marginBottom:20, padding:"18px 20px"}}>
             <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:14}}>
               <User size={17} color="#7c5cbf"/>
-              <h3 style={{fontWeight:700, fontSize:15, margin:0, color:"#1f2937"}}>Seu perfil</h3>
+              <h3 style={{fontWeight:700, fontSize:17, margin:0, color:"#1f2937"}}>Seu perfil</h3>
             </div>
             <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:12}}>
               {[
@@ -887,7 +887,7 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
                   <div style={{width:36, height:36, borderRadius:10, background:"#f0eaf8", display:"flex", alignItems:"center", justifyContent:"center", color:"#7c5cbf", flexShrink:0}}>{item.icon}</div>
                   <div style={{minWidth:0}}>
                     <p style={{fontSize:10.5, fontWeight:600, color:"#666", margin:0, letterSpacing:0.4}}>{item.label}</p>
-                    <p style={{fontSize:16, fontWeight:700, color:"#1f2937", margin:"1px 0 0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{item.valor || "—"}</p>
+                    <p style={{fontSize:32, fontWeight:700, color:"#1f2937", margin:"1px 0 0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{item.valor || "—"}</p>
                   </div>
                 </div>
               ))}
@@ -898,28 +898,28 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
             <div className="card" style={{borderLeft:"4px solid #3d9b7a"}}>
               <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:12}}>
                 <Pill size={18} color="#3d9b7a"/>
-                <h3 style={{fontWeight:700, fontSize:15, margin:0}}>Medicamentos Hoje</h3>
+                <h3 style={{fontWeight:700, fontSize:17, margin:0}}>Medicamentos Hoje</h3>
               </div>
-              {remedios.length === 0 ? <p style={{color:"#1a1a1a", fontSize:13}}>Nenhum cadastrado ainda</p> : remedios.slice(0,3).map(r=>(
+              {remedios.length === 0 ? <p style={{color:"#1a1a1a", fontSize:17}}>Nenhum cadastrado ainda</p> : remedios.slice(0,3).map(r=>(
                 <div key={r.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 0", borderBottom:"1px solid #f0f0f0"}}>
-                  <span style={{fontSize:15, fontWeight:600}}>{r.nome}</span>
-                  <span className="tag-mint" style={{fontSize:15, padding:"2px 8px", borderRadius:10, background:"var(--mint-light)", color:"var(--mint)", fontWeight:700}}>{r.horario}</span>
+                  <span style={{fontSize:17, fontWeight:600}}>{r.nome}</span>
+                  <span className="tag-mint" style={{fontSize:17, padding:"2px 8px", borderRadius:10, background:"var(--mint-light)", color:"var(--mint)", fontWeight:700}}>{r.horario}</span>
                 </div>
               ))}
-              <button className="btn-outline" onClick={()=>setTela("agenda")} style={{width:"100%",marginTop:10,padding:"6px",fontSize:13}}>Ver Agenda Completa</button>
+              <button className="btn-outline" onClick={()=>setTela("agenda")} style={{width:"100%",marginTop:10,padding:"6px",fontSize:17}}>Ver Agenda Completa</button>
             </div>
             <div className="card" style={{borderLeft:"4px solid #7c5cbf"}}>
               <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:12}}>
                 <Calendar size={18} color="#7c5cbf"/>
-                <h3 style={{fontWeight:700, fontSize:15, margin:0}}>Próximos Exames</h3>
+                <h3 style={{fontWeight:700, fontSize:17, margin:0}}>Próximos Exames</h3>
               </div>
-              {exames.length === 0 ? <p style={{color:"#1a1a1a", fontSize:13}}>Nenhum exame agendado</p> : exames.slice(0,2).map(e=>(
+              {exames.length === 0 ? <p style={{color:"#1a1a1a", fontSize:17}}>Nenhum exame agendado</p> : exames.slice(0,2).map(e=>(
                 <div key={e.id} style={{padding:"6px 0", borderBottom:"1px solid #f0f0f0"}}>
-                  <p style={{fontWeight:600, fontSize:15, margin:0}}>{e.titulo}</p>
-                  <p style={{fontSize:16, color:"#1a1a1a", margin:"2px 0 0"}}>{e.data} às {e.hora} • {e.local}</p>
+                  <p style={{fontWeight:600, fontSize:17, margin:0}}>{e.titulo}</p>
+                  <p style={{fontSize:32, color:"#1a1a1a", margin:"2px 0 0"}}>{e.data} às {e.hora} • {e.local}</p>
                 </div>
               ))}
-              <button className="btn-outline" onClick={()=>setTela("agenda")} style={{width:"100%",marginTop:10,padding:"6px",fontSize:15,borderColor:"#7c5cbf",color:"#7c5cbf"}}>Gerenciar Exames</button>
+              <button className="btn-outline" onClick={()=>setTela("agenda")} style={{width:"100%",marginTop:10,padding:"6px",fontSize:17,borderColor:"#7c5cbf",color:"#7c5cbf"}}>Gerenciar Exames</button>
             </div>
           </div>
         </>
@@ -933,27 +933,27 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
               <Bell size={18} color="white"/>
             </div>
             <div>
-              <h3 style={{fontWeight:800, fontSize:16, margin:0, color:"#222"}}>GDF Alerta</h3>
-              <p style={{fontSize:16, color:"#1a1a1a", margin:0}}>Informações oficiais para {mae.regiao}</p>
+              <h3 style={{fontWeight:800, fontSize:32, margin:0, color:"#222"}}>GDF Alerta</h3>
+              <p style={{fontSize:32, color:"#1a1a1a", margin:0}}>Informações oficiais para {mae.regiao}</p>
             </div>
           </div>
           {!canalCadastrado ? (
-            <button className="btn-mint" onClick={()=>setCanalCadastrado(true)} style={{padding:"8px 16px", fontSize:13}}>
+            <button className="btn-mint" onClick={()=>setCanalCadastrado(true)} style={{padding:"8px 16px", fontSize:17}}>
               📱 Cadastrar no Canal
             </button>
           ) : (
-            <span style={{background:"#e8f5f0", color:"#3d9b7a", borderRadius:10, padding:"6px 12px", fontSize:16, fontWeight:700}}>✅ Canal ativo: {mae.celular}</span>
+            <span style={{background:"#e8f5f0", color:"#3d9b7a", borderRadius:10, padding:"6px 12px", fontSize:32, fontWeight:700}}>✅ Canal ativo: {mae.celular}</span>
           )}
         </div>
         <div style={{display:"flex", flexDirection:"column", gap:10}}>
           {GDF_ALERTS.map(a=>(
             <div key={a.id} style={{display:"flex", gap:12, padding:"12px 14px", background:"#f8fcfa", borderRadius:12, border:"1px solid #e8f0ea", alignItems:"flex-start"}}>
-              <span style={{fontSize:22, flexShrink:0}}>{a.tipo}</span>
+              <span style={{fontSize:32, flexShrink:0}}>{a.tipo}</span>
               <div style={{flex:1}}>
-                <p style={{fontWeight:700, fontSize:16, margin:"0 0 2px", color:"#222"}}>{a.titulo}</p>
-                <p style={{fontSize:15, color:"#1a1a1a", margin:0, lineHeight:1.5}}>{a.msg}</p>
+                <p style={{fontWeight:700, fontSize:32, margin:"0 0 2px", color:"#222"}}>{a.titulo}</p>
+                <p style={{fontSize:17, color:"#1a1a1a", margin:0, lineHeight:1.5}}>{a.msg}</p>
               </div>
-              <span style={{fontSize:15, color:"#1a1a1a", flexShrink:0, marginTop:2}}>{a.data}</span>
+              <span style={{fontSize:17, color:"#1a1a1a", flexShrink:0, marginTop:2}}>{a.data}</span>
             </div>
           ))}
         </div>
@@ -968,8 +968,8 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
           {icon:"👥", label:"Módulo Cuidador", tela:"cuidador", color:"#f0f0f8", border:"#d4d0e8", text:"#555"},
         ].map(a=>(
           <button key={a.tela} onClick={()=>setTela(a.tela)} style={{background:a.color, border:`1.5px solid ${a.border}`, borderRadius:14, padding:"16px 12px", cursor:"pointer", textAlign:"center", fontFamily:"inherit", transition:"transform .15s"}}>
-            <div style={{fontSize:24, marginBottom:8}}>{a.icon}</div>
-            <p style={{fontWeight:700, fontSize:15, color:a.text, margin:0}}>{a.label}</p>
+            <div style={{fontSize:32, marginBottom:8}}>{a.icon}</div>
+            <p style={{fontWeight:700, fontSize:17, color:a.text, margin:0}}>{a.label}</p>
           </button>
         ))}
       </div>
@@ -995,18 +995,18 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
 
   return (
     <div>
-      <h1 style={{fontWeight:800,fontSize:26,color:"#222",marginBottom:4}}>Agenda de Saúde</h1>
-      <p style={{color:"#1a1a1a",fontSize:15,marginBottom:24}}>{filho ? `Para: ${filho.nome}` : "Configure seus filhos no dashboard"}</p>
+      <h1 style={{fontWeight:800,fontSize:30,color:"#222",marginBottom:4}}>Agenda de Saúde</h1>
+      <p style={{color:"#1a1a1a",fontSize:17,marginBottom:24}}>{filho ? `Para: ${filho.nome}` : "Configure seus filhos no dashboard"}</p>
 
       {/* MEDICAMENTOS */}
       <div className="card" style={{marginBottom:24}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
           <Pill size={20} color="#3d9b7a"/>
-          <h2 style={{fontWeight:800,fontSize:18,margin:0}}>Medicamentos</h2>
+          <h2 style={{fontWeight:800,fontSize:32,margin:0}}>Medicamentos</h2>
         </div>
         {/* Form */}
         <div style={{background:"#f8fcfa",borderRadius:18,padding:18,marginBottom:20,border:"1px solid #e0ede6"}}>
-          <p style={{fontWeight:700,fontSize:16,color:"#3d9b7a",marginBottom:14}}>+ Novo Medicamento</p>
+          <p style={{fontWeight:700,fontSize:32,color:"#3d9b7a",marginBottom:14}}>+ Novo Medicamento</p>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             <CampoInput icon={<Pill size={19}/>} label="NOME DO REMÉDIO">
               <input style={inputBare} placeholder="Ex: Risperidona" value={novoRemedio.nome} onChange={e=>setNovoRemedio(p=>({...p,nome:e.target.value}))}/>
@@ -1015,18 +1015,18 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
               <input style={inputBare} placeholder="Ex: 10 gotas" value={novoRemedio.dosagem} onChange={e=>setNovoRemedio(p=>({...p,dosagem:e.target.value}))}/>
             </CampoInput>
             <div>
-              <p style={{fontSize:16,fontWeight:600,color:"#333",marginBottom:10,marginLeft:4,letterSpacing:0.2}}>DIAS DA SEMANA</p>
+              <p style={{fontSize:32,fontWeight:600,color:"#333",marginBottom:10,marginLeft:4,letterSpacing:0.2}}>DIAS DA SEMANA</p>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 {DIAS.map(d=>{
                   const on = novoRemedio.dias.includes(d);
-                  return <button key={d} onClick={()=>toggleDia(d)} style={{padding:"7px 14px",borderRadius:14,fontSize:15,fontWeight:700,cursor:"pointer",border:"1.5px solid",fontFamily:"inherit",transition:"all .2s",borderColor:on?"#3d9b7a":"#e5e7eb",background:on?"#e8f5f0":"#fafafa",color:on?"#2f7d62":"#9ca3af"}}>{d}</button>;
+                  return <button key={d} onClick={()=>toggleDia(d)} style={{padding:"7px 14px",borderRadius:14,fontSize:17,fontWeight:700,cursor:"pointer",border:"1.5px solid",fontFamily:"inherit",transition:"all .2s",borderColor:on?"#3d9b7a":"#e5e7eb",background:on?"#e8f5f0":"#fafafa",color:on?"#2f7d62":"#9ca3af"}}>{d}</button>;
                 })}
               </div>
             </div>
             <CampoInput icon={<Clock size={19}/>} label="HORÁRIO">
               <input style={inputBare} type="time" value={novoRemedio.horario} onChange={e=>setNovoRemedio(p=>({...p,horario:e.target.value}))}/>
             </CampoInput>
-            <button onClick={addRemedio} style={{width:"100%",padding:"15px",fontSize:16,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#3d9b7a,#5bb89a)",boxShadow:"0 5px 14px rgba(61,155,122,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <button onClick={addRemedio} style={{width:"100%",padding:"15px",fontSize:32,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#3d9b7a,#5bb89a)",boxShadow:"0 5px 14px rgba(61,155,122,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               <Plus size={17}/> Adicionar Medicamento
             </button>
           </div>
@@ -1037,11 +1037,11 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
             <div key={r.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:r.ministrado?"#e8f5f0":"#fff",borderRadius:12,marginBottom:8,border:`1.5px solid ${r.ministrado?"#b8e0d2":"#eee"}`}}>
               <div style={{flex:1}}>
                 <p style={{fontWeight:700,margin:0,color:r.ministrado?"#3d9b7a":"#222",textDecoration:r.ministrado?"line-through":"none"}}>{r.nome}</p>
-                <p style={{fontSize:16,color:"#1a1a1a",margin:"2px 0 0"}}>{r.dosagem} • {r.dias.join(", ")} • {r.horario}</p>
+                <p style={{fontSize:32,color:"#1a1a1a",margin:"2px 0 0"}}>{r.dosagem} • {r.dias.join(", ")} • {r.horario}</p>
               </div>
               {!r.ministrado && <>
-                <button onClick={()=>tocarAlarme(`⏰ Hora do remédio! ${r.nome} — ${r.dosagem}`)} style={{background:"#fff3e0",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:16,fontWeight:700,color:"#e07b39",fontFamily:"inherit"}} title="Simular alarme"><Volume2 size={14}/></button>
-                <button onClick={()=>marcarMinistrado(r.id)} style={{background:"#e8f5f0",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:16,fontWeight:700,color:"#3d9b7a",fontFamily:"inherit"}}><Check size={14}/></button>
+                <button onClick={()=>tocarAlarme(`⏰ Hora do remédio! ${r.nome} — ${r.dosagem}`)} style={{background:"#fff3e0",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:32,fontWeight:700,color:"#e07b39",fontFamily:"inherit"}} title="Simular alarme"><Volume2 size={14}/></button>
+                <button onClick={()=>marcarMinistrado(r.id)} style={{background:"#e8f5f0",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:32,fontWeight:700,color:"#3d9b7a",fontFamily:"inherit"}}><Check size={14}/></button>
               </>}
               <button onClick={()=>setRemedios(p=>p.filter(x=>x.id!==r.id))} style={{background:"#fce4e4",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#c0392b"}}><Trash2 size={14}/></button>
             </div>
@@ -1053,10 +1053,10 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
       <div className="card">
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
           <Calendar size={20} color="#7c5cbf"/>
-          <h2 style={{fontWeight:800,fontSize:18,margin:0}}>Exames e Consultas</h2>
+          <h2 style={{fontWeight:800,fontSize:32,margin:0}}>Exames e Consultas</h2>
         </div>
         <div style={{background:"#f8f0fc",borderRadius:18,padding:18,marginBottom:20,border:"1px solid #e8d8f4"}}>
-          <p style={{fontWeight:700,fontSize:16,color:"#7c5cbf",marginBottom:14}}>+ Novo Exame/Consulta</p>
+          <p style={{fontWeight:700,fontSize:32,color:"#7c5cbf",marginBottom:14}}>+ Novo Exame/Consulta</p>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             <CampoInput icon={<FileText size={19}/>} label="CONSULTA / EXAME">
               <input style={inputBare} placeholder="Ex: Consulta neuropediatra" value={novoExame.titulo} onChange={e=>setNovoExame(p=>({...p,titulo:e.target.value}))}/>
@@ -1075,7 +1075,7 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
             <CampoInput icon={<AlertTriangle size={19}/>} label="NOTAS IMPORTANTES" dica="Avisaremos você na véspera com essas observações.">
               <input style={inputBare} placeholder="Ex: Jejum de 8h, levar laudo antigo" value={novoExame.notas} onChange={e=>setNovoExame(p=>({...p,notas:e.target.value}))}/>
             </CampoInput>
-            <button onClick={addExame} style={{width:"100%",padding:"15px",fontSize:16,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#7c5cbf,#9b7dd4)",boxShadow:"0 5px 14px rgba(124,92,191,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <button onClick={addExame} style={{width:"100%",padding:"15px",fontSize:32,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#7c5cbf,#9b7dd4)",boxShadow:"0 5px 14px rgba(124,92,191,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               <Plus size={17}/> Adicionar Exame
             </button>
           </div>
@@ -1086,8 +1086,8 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                 <div style={{flex:1}}>
                   <p style={{fontWeight:700,margin:0,color:"#222"}}>{e.titulo}</p>
-                  <p style={{fontSize:16,color:"#1a1a1a",margin:"2px 0 0"}}>{e.data} às {e.hora} • {e.local}</p>
-                  {e.notas && <p style={{fontSize:16,color:"#e07b39",margin:"4px 0 0",background:"#fff8f0",padding:"4px 8px",borderRadius:6}}>⚠️ {e.notas}</p>}
+                  <p style={{fontSize:32,color:"#1a1a1a",margin:"2px 0 0"}}>{e.data} às {e.hora} • {e.local}</p>
+                  {e.notas && <p style={{fontSize:32,color:"#e07b39",margin:"4px 0 0",background:"#fff8f0",padding:"4px 8px",borderRadius:6}}>⚠️ {e.notas}</p>}
                 </div>
                 <div style={{display:"flex",gap:6,marginLeft:10}}>
                   <button onClick={()=>tocarAlarme(`📅 Lembrete: ${e.titulo} — Amanhã ${e.hora}${e.notas?` | ${e.notas}`:""}`)} style={{background:"#f0eaf8",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#7c5cbf"}}><Bell size={14}/></button>
@@ -1116,12 +1116,12 @@ function TelaRequerimentos({mae,filho,filhos,filhoSelecionado,setFilhoSelecionad
 
   return (
     <div>
-      <h1 style={{fontWeight:800,fontSize:24,color:"#222",marginBottom:4}}>Gerador de Requerimentos</h1>
-      <p style={{color:"#1a1a1a",fontSize:16,marginBottom:20}}>9 modelos com fundamentação jurídica real • Clique para gerar</p>
+      <h1 style={{fontWeight:800,fontSize:32,color:"#222",marginBottom:4}}>Gerador de Requerimentos</h1>
+      <p style={{color:"#1a1a1a",fontSize:32,marginBottom:20}}>9 modelos com fundamentação jurídica real • Clique para gerar</p>
 
       {filhos.length > 1 && (
         <div style={{marginBottom:20}}>
-          <label style={{fontSize:15,fontWeight:700,color:"#1a1a1a",display:"block",marginBottom:6}}>Filho(a) para o documento:</label>
+          <label style={{fontSize:17,fontWeight:700,color:"#1a1a1a",display:"block",marginBottom:6}}>Filho(a) para o documento:</label>
           <select value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} className="select-field" style={{maxWidth:300}}>
             {filhos.map((f,i)=><option key={f.id} value={i}>{f.nome}</option>)}
           </select>
@@ -1133,12 +1133,12 @@ function TelaRequerimentos({mae,filho,filhos,filhoSelecionado,setFilhoSelecionad
         <div>
           {cats.map(cat=>(
             <div key={cat} style={{marginBottom:16}}>
-              <p style={{fontSize:15,fontWeight:800,color:"#1a1a1a",letterSpacing:1,marginBottom:8,textTransform:"uppercase"}}>{cat}</p>
+              <p style={{fontSize:17,fontWeight:800,color:"#1a1a1a",letterSpacing:1,marginBottom:8,textTransform:"uppercase"}}>{cat}</p>
               {REQUERIMENTOS.filter(r=>r.categoria===cat).map(r=>(
                 <button key={r.id} onClick={()=>setReqSelecionado(r)} style={{width:"100%",textAlign:"left",padding:"10px 14px",borderRadius:12,marginBottom:6,cursor:"pointer",fontFamily:"inherit",border:`1.5px solid ${reqSelecionado?.id===r.id?"#3d9b7a":"#eee"}`,background:reqSelecionado?.id===r.id?"#e8f5f0":"white",transition:"all .15s"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:15,fontWeight:800,color:"#3d9b7a",flexShrink:0}}>#{r.id}</span>
-                    <span style={{fontSize:15,fontWeight:600,color:reqSelecionado?.id===r.id?"#3d9b7a":"#333",lineHeight:1.3}}>{r.titulo}</span>
+                    <span style={{fontSize:17,fontWeight:800,color:"#3d9b7a",flexShrink:0}}>#{r.id}</span>
+                    <span style={{fontSize:17,fontWeight:600,color:reqSelecionado?.id===r.id?"#3d9b7a":"#333",lineHeight:1.3}}>{r.titulo}</span>
                   </div>
                 </button>
               ))}
@@ -1151,31 +1151,31 @@ function TelaRequerimentos({mae,filho,filhos,filhoSelecionado,setFilhoSelecionad
           {!reqSelecionado ? (
             <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#1a1a1a"}}>
               <FileText size={48} strokeWidth={1}/>
-              <p style={{fontSize:15,fontWeight:600}}>Selecione um modelo à esquerda</p>
+              <p style={{fontSize:17,fontWeight:600}}>Selecione um modelo à esquerda</p>
             </div>
           ) : !filho ? (
             <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#e07b39"}}>
               <AlertTriangle size={40}/>
-              <p style={{fontSize:15,fontWeight:600}}>Nenhum filho selecionado</p>
+              <p style={{fontSize:17,fontWeight:600}}>Nenhum filho selecionado</p>
             </div>
           ) : (
             <>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:10}}>
                 <div>
                   <span className="tag" style={{marginBottom:6}}>{reqSelecionado.categoria}</span>
-                  <h3 style={{fontWeight:800,fontSize:16,margin:"6px 0 2px",color:"#222"}}>{reqSelecionado.titulo}</h3>
-                  <p style={{fontSize:16,color:"#7c5cbf",fontWeight:600}}>{reqSelecionado.fundamentacao}</p>
+                  <h3 style={{fontWeight:800,fontSize:32,margin:"6px 0 2px",color:"#222"}}>{reqSelecionado.titulo}</h3>
+                  <p style={{fontSize:32,color:"#7c5cbf",fontWeight:600}}>{reqSelecionado.fundamentacao}</p>
                 </div>
                 <div style={{display:"flex",gap:8}}>
-                  <button className="btn-outline" onClick={copiar} style={{padding:"8px 14px",fontSize:15,display:"flex",alignItems:"center",gap:6}}>
+                  <button className="btn-outline" onClick={copiar} style={{padding:"8px 14px",fontSize:17,display:"flex",alignItems:"center",gap:6}}>
                     {textoCopied ? <><Check size={14} color="#3d9b7a"/>Copiado!</> : <><Copy size={14}/>Copiar</>}
                   </button>
-                  <button className="btn-mint" onClick={salvarRequerimento} style={{padding:"8px 14px",fontSize:15,display:"flex",alignItems:"center",gap:6}}>
+                  <button className="btn-mint" onClick={salvarRequerimento} style={{padding:"8px 14px",fontSize:17,display:"flex",alignItems:"center",gap:6}}>
                     {docSalvo ? <><Check size={14}/>Salvo!</> : <><Save size={14}/>Salvar no Arquivo</>}
                   </button>
                 </div>
               </div>
-              <div style={{background:"#f9f9f9",borderRadius:12,padding:"16px 20px",flex:1,border:"1px solid #eee",fontFamily:"'Courier New',monospace",fontSize:15,lineHeight:1.8,whiteSpace:"pre-wrap",overflowY:"auto",maxHeight:520,color:"#333"}}>
+              <div style={{background:"#f9f9f9",borderRadius:12,padding:"16px 20px",flex:1,border:"1px solid #eee",fontFamily:"'Courier New',monospace",fontSize:17,lineHeight:1.8,whiteSpace:"pre-wrap",overflowY:"auto",maxHeight:520,color:"#333"}}>
                 {texto}
               </div>
             </>
@@ -1194,8 +1194,8 @@ function TelaDocumentos({filho,filhoSelecionado,getDocFilho,setDocFilho,gaveta,s
 
   return (
     <div>
-      <h1 style={{fontWeight:800,fontSize:24,color:"#222",marginBottom:4}}>Meu Arquivo Digital</h1>
-      <p style={{color:"#1a1a1a",fontSize:16,marginBottom:20}}>{filho ? `Pasta de ${filho.nome}` : "Selecione um filho no dashboard"}</p>
+      <h1 style={{fontWeight:800,fontSize:32,color:"#222",marginBottom:4}}>Meu Arquivo Digital</h1>
+      <p style={{color:"#1a1a1a",fontSize:32,marginBottom:20}}>{filho ? `Pasta de ${filho.nome}` : "Selecione um filho no dashboard"}</p>
 
       {/* Inputs hidden */}
       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={e=>handleUpload(e,"camera")}/>
@@ -1215,8 +1215,8 @@ function TelaDocumentos({filho,filhoSelecionado,getDocFilho,setDocFilho,gaveta,s
       {uploading.map(([key,prog])=>(
         <div key={key} style={{background:"#f8fcfa",borderRadius:12,padding:"14px 16px",marginBottom:12,border:"1px solid #e0ede6"}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-            <span style={{fontSize:15,fontWeight:700,color:"#3d9b7a"}}>A carregar ficheiro...</span>
-            <span style={{fontSize:15,fontWeight:700,color:"#3d9b7a"}}>{Math.round(prog)}%</span>
+            <span style={{fontSize:17,fontWeight:700,color:"#3d9b7a"}}>A carregar ficheiro...</span>
+            <span style={{fontSize:17,fontWeight:700,color:"#3d9b7a"}}>{Math.round(prog)}%</span>
           </div>
           <div className="progress-bar">
             <div className="progress-fill" style={{width:`${prog}%`}}/>
@@ -1235,14 +1235,14 @@ function TelaDocumentos({filho,filhoSelecionado,getDocFilho,setDocFilho,gaveta,s
 
       {/* Lista de documentos */}
       <div className="card">
-        <h3 style={{fontWeight:800,fontSize:16,margin:"0 0 16px",color:"#222"}}>
+        <h3 style={{fontWeight:800,fontSize:32,margin:"0 0 16px",color:"#222"}}>
           {gaveta === "Saúde" ? "🏥" : gaveta === "Escola" ? "📚" : gaveta === "Documentos Pessoais" ? "🪪" : "📋"} {gaveta}
-          <span style={{fontSize:15,fontWeight:600,color:"#1a1a1a",marginLeft:8}}>({docs.length} arquivo{docs.length!==1?"s":""})</span>
+          <span style={{fontSize:17,fontWeight:600,color:"#1a1a1a",marginLeft:8}}>({docs.length} arquivo{docs.length!==1?"s":""})</span>
         </h3>
         {docs.length === 0 ? (
           <div style={{textAlign:"center",padding:"32px 0",color:"#1a1a1a"}}>
             <Folder size={48} strokeWidth={1}/>
-            <p style={{marginTop:12,fontSize:15}}>Pasta vazia. Adicione arquivos acima.</p>
+            <p style={{marginTop:12,fontSize:17}}>Pasta vazia. Adicione arquivos acima.</p>
           </div>
         ) : docs.map(doc=>(
           <div key={doc.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:"1px solid #f0f0f0"}}>
@@ -1250,9 +1250,9 @@ function TelaDocumentos({filho,filhoSelecionado,getDocFilho,setDocFilho,gaveta,s
               <FileText size={20} color={doc.tipo?.includes("image")?"#e07b39":"#7c5cbf"}/>
             </div>
             <div style={{flex:1,minWidth:0}}>
-              <p style={{fontWeight:700,fontSize:15,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.nome}</p>
-              <p style={{fontSize:16,color:"#1a1a1a",margin:"2px 0 0"}}>{doc.data} • {doc.tamanho}</p>
-              {doc.conteudo && <p style={{fontSize:15,color:"#7c5cbf",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.conteudo.substring(0,60)}...</p>}
+              <p style={{fontWeight:700,fontSize:17,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.nome}</p>
+              <p style={{fontSize:32,color:"#1a1a1a",margin:"2px 0 0"}}>{doc.data} • {doc.tamanho}</p>
+              {doc.conteudo && <p style={{fontSize:17,color:"#7c5cbf",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.conteudo.substring(0,60)}...</p>}
             </div>
             <div style={{display:"flex",gap:6}}>
               {doc.url && <a href={doc.url} target="_blank" rel="noreferrer" style={{background:"#e8f5f0",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#3d9b7a",display:"flex",alignItems:"center",textDecoration:"none"}}><Eye size={14}/></a>}
@@ -1280,29 +1280,29 @@ function TelaCuidador({filho,filhoSelecionado,cuidador,setCuidador,mae,gerarMsg,
 
   return (
     <div>
-      <h1 style={{fontWeight:800,fontSize:24,color:"#222",marginBottom:4}}>Módulo Cuidador</h1>
-      <p style={{color:"#1a1a1a",fontSize:16,marginBottom:24}}>Envie as instruções do dia para quem cuida de {filho?.nome || "sua criança"}</p>
+      <h1 style={{fontWeight:800,fontSize:32,color:"#222",marginBottom:4}}>Módulo Cuidador</h1>
+      <p style={{color:"#1a1a1a",fontSize:32,marginBottom:24}}>Envie as instruções do dia para quem cuida de {filho?.nome || "sua criança"}</p>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:20,alignItems:"start"}}>
         {/* Formulário */}
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
           <div className="card">
-            <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#3d9b7a",display:"flex",alignItems:"center",gap:8}}><Pill size={18}/>Medicamentos do Dia</h3>
+            <h3 style={{fontWeight:800,fontSize:17,margin:"0 0 16px",color:"#3d9b7a",display:"flex",alignItems:"center",gap:8}}><Pill size={18}/>Medicamentos do Dia</h3>
             <CampoTextarea icon={<Clock size={15}/>} label="HORÁRIOS E DOSES" cor="#3d9b7a" rows={5} value={c.remedios||""} onChange={e=>update("remedios",e.target.value)} placeholder={"Ex:\n07h - Risperidona 1mg (2 comp)\n12h - Ômega 3 (1 cápsula)\n18h - Melatonina 3mg (1 comp)"}/>
           </div>
           <div className="card">
-            <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#7c5cbf",display:"flex",alignItems:"center",gap:8}}>🥗 Restrições Alimentares</h3>
+            <h3 style={{fontWeight:800,fontSize:17,margin:"0 0 16px",color:"#7c5cbf",display:"flex",alignItems:"center",gap:8}}>🥗 Restrições Alimentares</h3>
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
               <CampoTextarea icon={<Check size={15}/>} label="✅ PODE COMER" cor="#3d9b7a" rows={3} value={c.podeAlimentar||""} onChange={e=>update("podeAlimentar",e.target.value)} placeholder="Ex: Frango, arroz, feijão, frutas..."/>
               <CampoTextarea icon={<X size={15}/>} label="❌ NÃO PODE COMER" cor="#c0392b" rows={3} value={c.naoPodeAlimentar||""} onChange={e=>update("naoPodeAlimentar",e.target.value)} placeholder="Ex: Glúten, leite, corantes..."/>
             </div>
           </div>
           <div className="card">
-            <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#e07b39",display:"flex",alignItems:"center",gap:8}}><Phone size={18}/>Contatos de Emergência</h3>
+            <h3 style={{fontWeight:800,fontSize:17,margin:"0 0 16px",color:"#e07b39",display:"flex",alignItems:"center",gap:8}}><Phone size={18}/>Contatos de Emergência</h3>
             <CampoTextarea icon={<Phone size={15}/>} label="TELEFONES IMPORTANTES" cor="#e07b39" rows={4} value={c.telefones||""} onChange={e=>update("telefones",e.target.value)} placeholder={"Ex:\n📱 Mãe: (61) 9 9999-0001\n👨 Pai: (61) 9 9999-0002\n🏥 SAMU: 192\n👩‍⚕️ Dra. Ana: (61) 3333-4444"}/>
           </div>
           <div className="card">
-            <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#1a1a1a",display:"flex",alignItems:"center",gap:8}}>📌 Observações Especiais</h3>
+            <h3 style={{fontWeight:800,fontSize:17,margin:"0 0 16px",color:"#1a1a1a",display:"flex",alignItems:"center",gap:8}}>📌 Observações Especiais</h3>
             <CampoTextarea icon={<Star size={15}/>} label="NOTAS PARA O CUIDADOR" cor="#7c5cbf" rows={3} value={c.obs||""} onChange={e=>update("obs",e.target.value)} placeholder="Ex: Não gosta de barulho alto. Usa fone de ouvido quando agitado."/>
           </div>
         </div>
@@ -1310,13 +1310,13 @@ function TelaCuidador({filho,filhoSelecionado,cuidador,setCuidador,mae,gerarMsg,
         {/* Preview e envio */}
         <div>
           <div className="card" style={{marginBottom:16}}>
-            <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 14px",color:"#222",display:"flex",alignItems:"center",gap:8}}><Eye size={18}/>Preview da Mensagem</h3>
-            <div style={{background:"#f0f8f4",borderRadius:12,padding:16,border:"1px solid #c8e6d8",fontFamily:"'Courier New',monospace",fontSize:16,lineHeight:1.8,whiteSpace:"pre-wrap",maxHeight:360,overflowY:"auto",color:"#333"}}>
+            <h3 style={{fontWeight:800,fontSize:17,margin:"0 0 14px",color:"#222",display:"flex",alignItems:"center",gap:8}}><Eye size={18}/>Preview da Mensagem</h3>
+            <div style={{background:"#f0f8f4",borderRadius:12,padding:16,border:"1px solid #c8e6d8",fontFamily:"'Courier New',monospace",fontSize:32,lineHeight:1.8,whiteSpace:"pre-wrap",maxHeight:360,overflowY:"auto",color:"#333"}}>
               {gerarMsg()}
             </div>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            <button className="btn-mint" onClick={enviarWhatsApp} style={{width:"100%",padding:"14px",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <button className="btn-mint" onClick={enviarWhatsApp} style={{width:"100%",padding:"14px",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               <Send size={18}/> Enviar via WhatsApp
             </button>
             <button className="btn-outline" onClick={copiarMsg} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -1340,12 +1340,12 @@ function TelaDireitos({direitoAberto,setDireitoAberto,checklistFeito,setChecklis
 
   return (
     <div>
-      <h1 style={{fontWeight:800,fontSize:24,color:"#222",marginBottom:4}}>Guia de Direitos & Rede de Apoio</h1>
-      <p style={{color:"#1a1a1a",fontSize:16,marginBottom:24}}>Focado no Distrito Federal • Checklists interativos passo a passo</p>
+      <h1 style={{fontWeight:800,fontSize:32,color:"#222",marginBottom:4}}>Guia de Direitos & Rede de Apoio</h1>
+      <p style={{color:"#1a1a1a",fontSize:32,marginBottom:24}}>Focado no Distrito Federal • Checklists interativos passo a passo</p>
 
       {/* Cards de direitos */}
       <div style={{marginBottom:32}}>
-        <h2 style={{fontWeight:800,fontSize:18,color:"#222",marginBottom:16}}>📋 Seus Direitos — Passo a Passo</h2>
+        <h2 style={{fontWeight:800,fontSize:32,color:"#222",marginBottom:16}}>📋 Seus Direitos — Passo a Passo</h2>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           {DIREITOS_GUIA.map(d=>{
             const done = d.checklist.filter((_,i)=>checklistFeito[`${d.id}_${i}`]).length;
@@ -1357,8 +1357,8 @@ function TelaDireitos({direitoAberto,setDireitoAberto,checklistFeito,setChecklis
                     <div style={{display:"flex",alignItems:"center",gap:12}}>
                       <span style={{fontSize:24}}>{d.icon}</span>
                       <div>
-                        <p style={{fontWeight:700,fontSize:15,margin:0,color:"#222"}}>{d.titulo}</p>
-                        <p style={{fontSize:16,color:"#1a1a1a",margin:"2px 0 0"}}>{done}/{d.checklist.length} etapas concluídas</p>
+                        <p style={{fontWeight:700,fontSize:17,margin:0,color:"#222"}}>{d.titulo}</p>
+                        <p style={{fontSize:32,color:"#1a1a1a",margin:"2px 0 0"}}>{done}/{d.checklist.length} etapas concluídas</p>
                       </div>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -1371,7 +1371,7 @@ function TelaDireitos({direitoAberto,setDireitoAberto,checklistFeito,setChecklis
                 </button>
                 {open && (
                   <div style={{borderTop:"1px solid #f0f0f0",padding:"16px 20px"}}>
-                    <p style={{fontSize:15,fontWeight:700,color:"#1a1a1a",marginBottom:12}}>Passo a passo:</p>
+                    <p style={{fontSize:17,fontWeight:700,color:"#1a1a1a",marginBottom:12}}>Passo a passo:</p>
                     {d.checklist.map((passo,i)=>{
                       const checked = !!checklistFeito[`${d.id}_${i}`];
                       return (
@@ -1379,15 +1379,15 @@ function TelaDireitos({direitoAberto,setDireitoAberto,checklistFeito,setChecklis
                           <div className={`check-box ${checked?"checked":""}`}>
                             {checked && <Check size={12} color="white" strokeWidth={3}/>}
                           </div>
-                          <span style={{fontSize:16,color:checked?"#888":"#333",textDecoration:checked?"line-through":"none",lineHeight:1.5}}>{passo}</span>
+                          <span style={{fontSize:32,color:checked?"#888":"#333",textDecoration:checked?"line-through":"none",lineHeight:1.5}}>{passo}</span>
                         </div>
                       );
                     })}
                     <div style={{background:"#fff8e6",border:"1.5px solid #ffd87a",borderRadius:12,padding:"12px 16px",marginTop:16}}>
-                      <p style={{fontWeight:800,fontSize:15,color:"#b8860b",margin:"0 0 4px"}}>⚠️ Em caso de Negativa ou Recusa:</p>
-                      <p style={{fontSize:15,color:"#1a1a1a",margin:0,lineHeight:1.6}}>{d.negativa}</p>
+                      <p style={{fontWeight:800,fontSize:17,color:"#b8860b",margin:"0 0 4px"}}>⚠️ Em caso de Negativa ou Recusa:</p>
+                      <p style={{fontSize:17,color:"#1a1a1a",margin:0,lineHeight:1.6}}>{d.negativa}</p>
                     </div>
-                    <button className="btn-outline" onClick={()=>setTela("requerimentos")} style={{marginTop:14,fontSize:15,display:"flex",alignItems:"center",gap:6}}>
+                    <button className="btn-outline" onClick={()=>setTela("requerimentos")} style={{marginTop:14,fontSize:17,display:"flex",alignItems:"center",gap:6}}>
                       <FileText size={14}/> Abrir Gerador de Requerimentos
                     </button>
                   </div>
@@ -1400,11 +1400,11 @@ function TelaDireitos({direitoAberto,setDireitoAberto,checklistFeito,setChecklis
 
       {/* Rede de Apoio */}
       <div>
-        <h2 style={{fontWeight:800,fontSize:18,color:"#222",marginBottom:12}}>🗺️ Rede de Apoio no DF</h2>
+        <h2 style={{fontWeight:800,fontSize:32,color:"#222",marginBottom:12}}>🗺️ Rede de Apoio no DF</h2>
         <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-          <button onClick={()=>setFiltroRede("")} style={{padding:"6px 14px",borderRadius:20,fontSize:16,fontWeight:700,cursor:"pointer",border:"1.5px solid",fontFamily:"inherit",borderColor:filtroRede===""?"#3d9b7a":"#ddd",background:filtroRede===""?"#e8f5f0":"white",color:filtroRede===""?"#3d9b7a":"#888"}}>Todos</button>
+          <button onClick={()=>setFiltroRede("")} style={{padding:"6px 14px",borderRadius:20,fontSize:32,fontWeight:700,cursor:"pointer",border:"1.5px solid",fontFamily:"inherit",borderColor:filtroRede===""?"#3d9b7a":"#ddd",background:filtroRede===""?"#e8f5f0":"white",color:filtroRede===""?"#3d9b7a":"#888"}}>Todos</button>
           {TIPOS.map(t=>(
-            <button key={t} onClick={()=>setFiltroRede(t===filtroRede?"":t)} style={{padding:"6px 14px",borderRadius:20,fontSize:16,fontWeight:700,cursor:"pointer",border:"1.5px solid",fontFamily:"inherit",borderColor:filtroRede===t?"#7c5cbf":"#ddd",background:filtroRede===t?"#f0eaf8":"white",color:filtroRede===t?"#7c5cbf":"#888"}}>{t}</button>
+            <button key={t} onClick={()=>setFiltroRede(t===filtroRede?"":t)} style={{padding:"6px 14px",borderRadius:20,fontSize:32,fontWeight:700,cursor:"pointer",border:"1.5px solid",fontFamily:"inherit",borderColor:filtroRede===t?"#7c5cbf":"#ddd",background:filtroRede===t?"#f0eaf8":"white",color:filtroRede===t?"#7c5cbf":"#888"}}>{t}</button>
           ))}
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:12}}>
@@ -1414,17 +1414,17 @@ function TelaDireitos({direitoAberto,setDireitoAberto,checklistFeito,setChecklis
             return (
               <div key={r.nome} style={{background:col.bg,border:`1.5px solid ${col.border}`,borderRadius:14,padding:"14px 16px"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                  <span style={{fontSize:15,fontWeight:800,color:col.tag,background:"white",borderRadius:8,padding:"2px 8px",border:`1px solid ${col.border}`}}>{r.tipo}</span>
-                  <span style={{fontSize:15,color:"#1a1a1a"}}>{r.regiao}</span>
+                  <span style={{fontSize:17,fontWeight:800,color:col.tag,background:"white",borderRadius:8,padding:"2px 8px",border:`1px solid ${col.border}`}}>{r.tipo}</span>
+                  <span style={{fontSize:17,color:"#1a1a1a"}}>{r.regiao}</span>
                 </div>
-                <p style={{fontWeight:700,fontSize:16,margin:"0 0 4px",color:"#222"}}>{r.nome}</p>
+                <p style={{fontWeight:700,fontSize:32,margin:"0 0 4px",color:"#222"}}>{r.nome}</p>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
                   <MapPin size={11} color="#aaa"/>
-                  <p style={{fontSize:16,color:"#1a1a1a",margin:0}}>{r.endereco}</p>
+                  <p style={{fontSize:32,color:"#1a1a1a",margin:0}}>{r.endereco}</p>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
                   <Phone size={11} color="#aaa"/>
-                  <p style={{fontSize:16,fontWeight:700,color:col.tag,margin:0}}>{r.tel}</p>
+                  <p style={{fontSize:32,fontWeight:700,color:col.tag,margin:0}}>{r.tel}</p>
                 </div>
               </div>
             );
