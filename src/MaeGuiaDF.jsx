@@ -514,6 +514,7 @@ _Enviado via MãeGuia DF_ 💜`;
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
         .hamburger{display:none; position:fixed; top:16px; right:16px; z-index:150; background:white; border:1.5px solid #e0e7ef; border-radius:12px; padding:10px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+        .dashboard-logout{display:block;}
         @media(max-width:768px){.hamburger{display:flex;}}
       `}</style>
 
@@ -832,18 +833,23 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
   ];
   return (
     <div>
-      <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:28, flexWrap:"wrap", gap:12}}>
-        <div>
-          <h1 style={{fontWeight:800, fontSize:14, color:"#222", margin:0}}>Dashboard</h1>
-          <p style={{color:"#1a1a1a", fontSize:15}}>{hoje.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</p>
-        </div>
-        <div style={{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap"}}>
+      {/* Header do Dashboard */}
+      <div style={{marginBottom:20}}>
+        <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12, flexWrap:"wrap", gap:12}}>
+          <div>
+            <h1 style={{fontWeight:800, fontSize:14, color:"#222", margin:0}}>Dashboard</h1>
+            <p style={{color:"#1a1a1a", fontSize:15}}>{hoje.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</p>
+          </div>
           {filhos.length > 1 && (
             <select value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"var(--mint-light)", border:"1.5px solid var(--mint-mid)", borderRadius:12, padding:"8px 14px", fontWeight:700, fontSize:14, color:"#3d9b7a", cursor:"pointer", fontFamily:"inherit"}}>
               {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
             </select>
           )}
-          <button onClick={fazerLogout} style={{display:"flex", alignItems:"center", justifyContent:"center", gap:6, background:"#fff0ef", color:"#c0392b", border:"1.5px solid #fcc", borderRadius:12, padding:"8px 16px", fontWeight:700, cursor:"pointer", fontSize:15, fontFamily:"inherit"}}>
+        </div>
+        
+        {/* Botão Sair - Centralizado Mobile */}
+        <div className="dashboard-logout">
+          <button onClick={fazerLogout} style={{display:"flex", alignItems:"center", justifyContent:"center", gap:6, background:"#fff0ef", color:"#c0392b", border:"1.5px solid #fcc", borderRadius:12, padding:"10px 20px", fontWeight:700, cursor:"pointer", fontSize:15, fontFamily:"inherit", width:"100%", maxWidth:300, margin:"0 auto"}}>
             <LogOut size={15}/> Sair
           </button>
         </div>
