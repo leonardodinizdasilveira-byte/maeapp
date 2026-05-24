@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import MaeGuiaDF from "./MaeGuiaDF.jsx";
+import App from "./App.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <MaeGuiaDF />
+    <App />
   </React.StrictMode>
 );
