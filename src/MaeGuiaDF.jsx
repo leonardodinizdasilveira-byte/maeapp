@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Heart, Home, Calendar, FileText, Folder, Users, BookOpen,
   Bell, LogOut, Plus, Trash2, Copy, Check, Upload, Camera,
@@ -6,6 +6,7 @@ import {
   AlertTriangle, Phone, Pill, X, Menu, Save, Send,
   Shield, Star, Clock, MapPin, Activity, Baby, Volume2, VolumeX, User, Mail
 } from "lucide-react";
+import { auth } from "./firebase";
 
 // ─── DADOS INICIAIS ───────────────────────────────────────────────────────────
 const REGIOES_DF = [
@@ -16,7 +17,34 @@ const REGIOES_DF = [
   "Park Way","Setor de Mansões","Itapoã","Varjão","Fercal","Arniqueira"
 ];
 
-const DIAGNOSTICOS = ["TEA","TDAH","Síndrome de Down","Paralisia Cerebral","Transtorno do Processamento Sensorial","Outros"];
+const DIAGNOSTICOS = [
+  "TEA (Autismo)",
+  "TDAH",
+  "Síndrome de Down",
+  "Paralisia Cerebral",
+  "Deficiência Visual",
+  "Cegueira",
+  "Baixa Visão",
+  "Deficiência Auditiva",
+  "Surdez",
+  "Deficiência Física/Cadeirante",
+  "Nanismo",
+  "Amputação/Ausência de Membros",
+  "Deficiência Intelectual",
+  "Síndrome de Asperger",
+  "Transtorno do Processamento Sensorial",
+  "Dislexia",
+  "Epilepsia",
+  "Hidrocefalia",
+  "Microcefalia",
+  "Síndrome de Rett",
+  "Síndrome de Williams",
+  "Fibrose Cística",
+  "Distrofia Muscular",
+  "Osteogênese Imperfeita",
+  "Múltiplas Deficiências",
+  "Outros"
+];
 
 const REQUERIMENTOS = [
   { id:1, categoria:"Educação Inclusiva", titulo:"Mediador/Monitor Escolar (SEEDF)", fundamentacao:"Lei Berenice Piana (Lei 12.764/2012), LBI (Lei 13.146/2015), Art. 28" },
@@ -215,10 +243,11 @@ function clearStore() {
 }
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
-export default function MaeGuiaDF() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => loadStore("mgdf_loggedIn", false));
-  const [mae, setMae] = useState(() => loadStore("mgdf_mae", { nome:"", email:"", celular:"", regiao:"" }));
-  const [filhos, setFilhos] = useState(() => loadStore("mgdf_filhos", []));
+export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
+  // Carregar dados do Firebase ou usar vazios
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Sempre true pois auth já foi feita
+  const [mae, setMae] = useState(() => dadosPerfil?.mae || { nome:"", email:user?.email || "", celular:"", regiao:"" });
+  const [filhos, setFilhos] = useState(() => dadosPerfil?.filhos || []);
   const [filhoSelecionado, setFilhoSelecionado] = useState(0);
   const [tela, setTela] = useState("dashboard");
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -263,17 +292,15 @@ export default function MaeGuiaDF() {
 
   const filho = filhos[filhoSelecionado] || null;
 
-  // Persistência em memória (mantém sessão durante o uso)
-  useEffect(() => { saveStore("mgdf_loggedIn", isLoggedIn); }, [isLoggedIn]);
-  useEffect(() => { saveStore("mgdf_mae", mae); }, [mae]);
-  useEffect(() => { saveStore("mgdf_filhos", filhos); }, [filhos]);
+  // Salvar no Firebase quando dados mudarem
+  useEffect(() => {
+    if (mae.nome || mae.celular || mae.regiao) {
+      onSalvarPerfil({ mae, filhos });
+    }
+  }, [mae, filhos]);
 
   function fazerLogout() {
-    clearStore();
-    setIsLoggedIn(false);
-    setMae({ nome:"", email:"", celular:"", regiao:"" });
-    setFilhos([]);
-    setOnbStep(1);
+    auth.signOut(); // Logout do Firebase
   }
 
   function getDocFilho(fIdx, gv) {
@@ -478,10 +505,16 @@ _Enviado via MãeGuia DF_ 💜`;
           .font-label{font-size:15px!important; font-weight:700!important;}
           .sidebar{display:none!important;}
           .mobile-bar{display:flex!important;}
-          .main-content{padding:16px!important;}
+          .main-content{padding:16px!important; padding-bottom:100px!important;} /* mais espaço embaixo */
         }
         .mobile-bar{display:none; position:fixed; bottom:0; left:0; right:0; background:white; border-top:1.5px solid #e0e7ef; z-index:100; padding:6px 0;}
         .sidebar{display:flex;}
+        .mobile-menu-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; animation:fadeIn 0.2s;}
+        .mobile-menu-drawer{position:fixed; top:0; left:0; bottom:0; width:280px; background:white; z-index:201; box-shadow:2px 0 12px rgba(0,0,0,0.15); animation:slideIn 0.3s; overflow-y:auto;}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+        .hamburger{display:none; position:fixed; top:16px; left:16px; z-index:150; background:white; border:1.5px solid #e0e7ef; border-radius:12px; padding:10px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+        @media(max-width:768px){.hamburger{display:flex;}}
       `}</style>
 
       {/* MODAL ALARME */}
@@ -496,6 +529,61 @@ _Enviado via MãeGuia DF_ 💜`;
             </button>
           </div>
         </div>
+      )}
+
+      {/* BOTÃO HAMBÚRGUER MOBILE */}
+      <button className="hamburger" onClick={()=>setMobileMenu(true)}>
+        <Menu size={24} color="#3d9b7a"/>
+      </button>
+
+      {/* MENU LATERAL MOBILE (DRAWER) */}
+      {mobileMenu && (
+        <>
+          <div className="mobile-menu-overlay" onClick={()=>setMobileMenu(false)}/>
+          <div className="mobile-menu-drawer">
+            <div style={{padding:"24px 16px"}}>
+              {/* Logo e fechar */}
+              <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:28}}>
+                <div style={{display:"flex", alignItems:"center", gap:10}}>
+                  <div style={{width:38, height:38, background:"linear-gradient(135deg,var(--mint),var(--lav))", borderRadius:12, display:"flex", alignItems:"center", justifyContent:"center"}}>
+                    <Heart size={20} color="white" />
+                  </div>
+                  <div>
+                    <p style={{fontWeight:800, fontSize:15, color:"var(--mint)", lineHeight:1, margin:0}}>MãeGuia</p>
+                    <p style={{fontSize:11, color:"var(--lav)", fontWeight:700, margin:0}}>DF</p>
+                  </div>
+                </div>
+                <button onClick={()=>setMobileMenu(false)} style={{background:"#f0f0f0", border:"none", borderRadius:10, padding:"8px", cursor:"pointer", display:"flex"}}>
+                  <X size={20} color="#666"/>
+                </button>
+              </div>
+
+              {/* Seletor de filho */}
+              {filhos.length > 0 && (
+                <div style={{background:"var(--mint-light)", borderRadius:12, padding:"10px 12px", marginBottom:20}}>
+                  <p style={{fontSize:11, color:"var(--mint)", fontWeight:700, marginBottom:6}}>FILHO(A) ATIVO</p>
+                  <select className="select-field" value={filhoSelecionado} onChange={e=>{setFilhoSelecionado(+e.target.value);setMobileMenu(false);}} style={{background:"transparent", border:"none", padding:0, fontSize:14, fontWeight:700, color:"#333"}}>
+                    {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {/* Menu */}
+              <nav style={{display:"flex", flexDirection:"column", gap:4, marginBottom:20}}>
+                {navItems.map(n => (
+                  <button key={n.id} className={`nav-item ${tela===n.id?"active":""}`} onClick={()=>{setTela(n.id);setMobileMenu(false);}} style={{display:"flex", alignItems:"center", gap:10, padding:"12px 14px", background:"none", border:"none", textAlign:"left", fontSize:15, color:tela===n.id?"var(--mint)":"#1a1a1a", width:"100%", fontFamily:"inherit"}}>
+                    {n.icon} {n.label}
+                  </button>
+                ))}
+              </nav>
+
+              {/* Botão sair */}
+              <button onClick={()=>{fazerLogout();setMobileMenu(false);}} style={{display:"flex", alignItems:"center", gap:8, background:"#fff0ef", color:"var(--danger)", border:"1.5px solid #fcc", borderRadius:12, padding:"10px 14px", fontWeight:700, cursor:"pointer", fontSize:14, width:"100%", fontFamily:"inherit"}}>
+                <LogOut size={16}/> Sair
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* SIDEBAR DESKTOP */}
@@ -696,16 +784,22 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
                   <input style={inputBare} type="number" placeholder="Idade em anos" value={novoFilho.idade} onChange={e=>setNovoFilho(p=>({...p,idade:e.target.value}))} min="0" max="25"/>
                 </CampoInput>
                 <div>
-                  <p style={{fontSize:16, fontWeight:600, color:"#333", marginBottom:10, marginLeft:4, letterSpacing:0.2}}>DIAGNÓSTICO(S)</p>
-                  <div style={{display:"flex", flexWrap:"wrap", gap:8}}>
-                    {DIAGNOSTICOS.map(d => {
-                      const on = novoFilho.diagnosticos.includes(d);
-                      return (
-                        <button key={d} onClick={()=>toggleDiag(d)} style={{padding:"7px 14px", borderRadius:14, fontSize:15, fontWeight:700, cursor:"pointer", border:"1.5px solid", fontFamily:"inherit", transition:"all .2s", borderColor: on ? "#3d9b7a" : "#e5e7eb", background: on ? "#e8f5f0" : "#fafafa", color: on ? "#2f7d62" : "#9ca3af"}}>
-                          {on && "✓ "}{d}
-                        </button>
-                      );
-                    })}
+                  <p style={{fontSize:16, fontWeight:600, color:"#333", marginBottom:6, marginLeft:4, letterSpacing:0.2}}>DIAGNÓSTICO(S)</p>
+                  <p style={{fontSize:13, color:"#666", marginBottom:10, marginLeft:4}}>Selecione um ou mais (múltipla escolha):</p>
+                  <div style={{maxHeight:240, overflowY:"auto", border:"1.5px solid #e5e7eb", borderRadius:14, padding:10, background:"#fafbfa"}}>
+                    <div style={{display:"flex", flexDirection:"column", gap:4}}>
+                      {DIAGNOSTICOS.map(d => {
+                        const on = novoFilho.diagnosticos.includes(d);
+                        return (
+                          <button key={d} onClick={()=>toggleDiag(d)} style={{display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, fontSize:15, fontWeight:on?700:600, cursor:"pointer", border:"none", fontFamily:"inherit", transition:"all .15s", background:on?"#e8f5f0":"white", color:on?"#2f7d62":"#333", textAlign:"left", width:"100%"}}>
+                            <div style={{width:22, height:22, borderRadius:6, border:`2px solid ${on?"#3d9b7a":"#d1d5db"}`, background:on?"#3d9b7a":"white", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all .15s"}}>
+                              {on && <Check size={15} color="white" strokeWidth={3}/>}
+                            </div>
+                            {d}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
                 <button onClick={adicionarFilho} style={{width:"100%", padding:"13px", fontSize:16, fontWeight:700, color:"#3d9b7a", background:"#fff", border:"1.5px solid #3d9b7a", borderRadius:14, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:6}}>
