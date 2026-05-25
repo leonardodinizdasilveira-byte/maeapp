@@ -6,7 +6,9 @@ import {
   AlertTriangle, Phone, Pill, X, Menu, Save, Send,
   Shield, Star, Clock, MapPin, Activity, Baby, Volume2, VolumeX, User, Mail
 } from "lucide-react";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
+import { deleteUser } from "firebase/auth";
+import { doc, deleteDoc } from "firebase/firestore";
 
 // ─── DADOS INICIAIS ───────────────────────────────────────────────────────────
 const REGIOES_DF = [
@@ -353,6 +355,42 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   function fazerLogout() {
     auth.signOut(); // Logout do Firebase
   }
+  
+  async function sairEDeletarConta() {
+    const confirmacao = window.confirm(
+      "⚠️ ATENÇÃO!\n\n" +
+      "Ao sair agora, sua conta será DELETADA permanentemente.\n\n" +
+      "Você precisará criar um novo cadastro com e-mail e senha.\n\n" +
+      "Deseja realmente sair e deletar esta conta?"
+    );
+    
+    if (!confirmacao) return;
+    
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        // Deletar documentos do Firestore
+        try {
+          await deleteDoc(doc(db, "usuarios", user.uid));
+        } catch (e) {
+          console.log("Doc usuarios não encontrado");
+        }
+        
+        try {
+          await deleteDoc(doc(db, "perfis", user.uid));
+        } catch (e) {
+          console.log("Doc perfis não encontrado");
+        }
+        
+        // Deletar conta do Firebase Auth
+        await deleteUser(user);
+      }
+    } catch (error) {
+      console.error("Erro ao deletar conta:", error);
+      // Mesmo se der erro, faz logout
+      auth.signOut();
+    }
+  }
 
   function getDocFilho(fIdx, gv) {
     return documentos[`${fIdx}_${gv}`] || [];
@@ -547,6 +585,7 @@ _Enviado via MãeGuia DF_ 💜`;
     toggleDiag={toggleDiag} adicionarFilho={adicionarFilhoOnb}
     avancar={avancarOnboarding} finalizar={finalizarOnboarding}
     setFilhos={setFilhos}
+    sairEDeletarConta={sairEDeletarConta}
   />;
 
   return (
@@ -783,11 +822,18 @@ function CampoTextarea({ icon, label, dica, cor="#3d9b7a", rows=4, value, onChan
   );
 }
 
-function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggleDiag,adicionarFilho,avancar,finalizar,setFilhos}) {
+function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggleDiag,adicionarFilho,avancar,finalizar,setFilhos,sairEDeletarConta}) {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{background:"#f6f8f7", padding:"24px 16px", fontFamily:"'Nunito', system-ui, sans-serif"}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');`}</style>
       <div style={{maxWidth:480, width:"100%"}}>
+        {/* Botão Voltar/Sair */}
+        <div style={{marginBottom:16, display:"flex", justifyContent:"flex-end"}}>
+          <button onClick={sairEDeletarConta} style={{display:"flex", alignItems:"center", gap:6, background:"#fff0ef", color:"#c0392b", border:"1.5px solid #fcc", borderRadius:10, padding:"8px 14px", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"inherit"}}>
+            <LogOut size={14}/> Sair e Refazer Cadastro
+          </button>
+        </div>
+        
         {/* Logo */}
         <div style={{textAlign:"center", marginBottom:28}}>
           <div style={{width:60, height:60, background:"linear-gradient(135deg,#3d9b7a,#7c5cbf)", borderRadius:20, display:"inline-flex", alignItems:"center", justifyContent:"center", marginBottom:12, boxShadow:"0 6px 20px rgba(61,155,122,0.25)"}}>
