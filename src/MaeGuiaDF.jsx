@@ -5,7 +5,7 @@ import {
   Download, Eye, ChevronDown, ChevronRight, ChevronUp, ChevronLeft,
   AlertTriangle, Phone, Pill, X, Menu, Save, Send,
   Shield, Star, Clock, MapPin, Activity, Baby, Volume2, VolumeX, User, Mail,
-  Brain, DollarSign, PhoneCall, TrendingUp, PieChart, Zap, MessageCircle
+  Brain, DollarSign, PhoneCall, TrendingUp, PieChart, Zap, MessageCircle, Moon, Sun
 } from "lucide-react";
 import { auth, db } from "./firebase";
 import { deleteUser } from "firebase/auth";
@@ -255,6 +255,7 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [filhoSelecionado, setFilhoSelecionado] = useState(0);
   const [tela, setTela] = useState("dashboard");
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [modoEscuro, setModoEscuro] = useState(() => dadosPerfil?.modoEscuro || false);
 
   // Onboarding state
   const [onbStep, setOnbStep] = useState(1); // 1=mãe, 2=filho
@@ -296,16 +297,16 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [checklistFeito, setChecklistFeito] = useState({});
   
   // Diário de Comportamento
-  const [registros, setRegistros] = useState([]);
+  const [registros, setRegistros] = useState(() => dadosPerfil?.registros || []);
   const [novoRegistro, setNovoRegistro] = useState({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
   
   // Financeiro
-  const [gastos, setGastos] = useState([]);
+  const [gastos, setGastos] = useState(() => dadosPerfil?.gastos || []);
   const [novoGasto, setNovoGasto] = useState({ categoria:"", valor:"", data:"", descricao:"" });
-  const [orcamento, setOrcamento] = useState({ medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
+  const [orcamento, setOrcamento] = useState(() => dadosPerfil?.orcamento || { medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
   
   // Contatos
-  const [contatos, setContatos] = useState([]);
+  const [contatos, setContatos] = useState(() => dadosPerfil?.contatos || []);
   const [novoContato, setNovoContato] = useState({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
 
   // GDF Alerta
@@ -330,9 +331,9 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   // Salvar no Firebase quando dados mudarem
   useEffect(() => {
     if (mae.nome || mae.celular || mae.regiao) {
-      onSalvarPerfil({ mae, filhos });
+      onSalvarPerfil({ mae, filhos, registros, gastos, orcamento, contatos, modoEscuro });
     }
-  }, [mae, filhos]);
+  }, [mae, filhos, registros, gastos, orcamento, contatos, modoEscuro]);
 
   // Sistema de verificação automática de alertas
   useEffect(() => {
@@ -621,7 +622,7 @@ _Enviado via MãeGuia DF_ 💜`;
   />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-mint-50 via-lavender-50 to-white flex" style={{fontFamily:"'Nunito', system-ui, sans-serif"}}>
+    <div className="min-h-screen bg-gradient-to-br from-mint-50 via-lavender-50 to-white flex" style={{fontFamily:"'Nunito', system-ui, sans-serif", background:modoEscuro?"#1a1a1a":"", transition:"background .3s"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         :root{
@@ -1008,9 +1009,12 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
             <p style={{color:"#1a1a1a", fontSize:15}}>{hoje.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</p>
           </div>
           
-          {/* Gerenciamento de Filhos */}
+          {/* Gerenciamento de Filhos + Modo Escuro */}
           {filhos.length > 0 && (
             <div style={{display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+              <button onClick={()=>setModoEscuro(!modoEscuro)} title={modoEscuro?"Modo Claro":"Modo Escuro"} style={{background:modoEscuro?"#333":"#f5f5f5", border:"1.5px solid "+(modoEscuro?"#555":"#ddd"), borderRadius:12, padding:"8px 12px", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontFamily:"inherit"}}>
+                {modoEscuro ? <Sun size={16} color="#ffd700"/> : <Moon size={16} color="#666"/>}
+              </button>
               <select value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"var(--mint-light)", border:"1.5px solid var(--mint-mid)", borderRadius:12, padding:"8px 14px", fontWeight:700, fontSize:14, color:"#3d9b7a", cursor:"pointer", fontFamily:"inherit"}}>
                 {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
               </select>
