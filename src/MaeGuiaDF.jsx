@@ -4,7 +4,8 @@ import {
   Bell, LogOut, Plus, Trash2, Copy, Check, Upload, Camera,
   Download, Eye, ChevronDown, ChevronRight, ChevronUp, ChevronLeft,
   AlertTriangle, Phone, Pill, X, Menu, Save, Send,
-  Shield, Star, Clock, MapPin, Activity, Baby, Volume2, VolumeX, User, Mail
+  Shield, Star, Clock, MapPin, Activity, Baby, Volume2, VolumeX, User, Mail,
+  Brain, DollarSign, PhoneCall, TrendingUp, PieChart, Zap, MessageCircle
 } from "lucide-react";
 import { auth, db } from "./firebase";
 import { deleteUser } from "firebase/auth";
@@ -293,6 +294,19 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   // Direitos
   const [direitoAberto, setDireitoAberto] = useState(null);
   const [checklistFeito, setChecklistFeito] = useState({});
+  
+  // Diário de Comportamento
+  const [registros, setRegistros] = useState([]);
+  const [novoRegistro, setNovoRegistro] = useState({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
+  
+  // Financeiro
+  const [gastos, setGastos] = useState([]);
+  const [novoGasto, setNovoGasto] = useState({ categoria:"", valor:"", data:"", descricao:"" });
+  const [orcamento, setOrcamento] = useState({ medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
+  
+  // Contatos
+  const [contatos, setContatos] = useState([]);
+  const [novoContato, setNovoContato] = useState({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
 
   // GDF Alerta
   const [canalCadastrado, setCanalCadastrado] = useState(false);
@@ -587,6 +601,9 @@ _Enviado via MãeGuia DF_ 💜`;
   const navItems = [
     { id:"dashboard", icon:<Home size={18}/>, label:"Dashboard" },
     { id:"agenda", icon:<Calendar size={18}/>, label:"Agenda" },
+    { id:"diario", icon:<Brain size={18}/>, label:"Diário" },
+    { id:"financeiro", icon:<DollarSign size={18}/>, label:"Financeiro" },
+    { id:"contatos", icon:<PhoneCall size={18}/>, label:"Contatos" },
     { id:"requerimentos", icon:<FileText size={18}/>, label:"Requerimentos" },
     { id:"documentos", icon:<Folder size={18}/>, label:"Meu Arquivo" },
     { id:"cuidador", icon:<Users size={18}/>, label:"Cuidador" },
@@ -784,6 +801,9 @@ _Enviado via MãeGuia DF_ 💜`;
         {tela === "cuidador" && <TelaCuidador filho={filho} filhoSelecionado={filhoSelecionado} cuidador={cuidador} setCuidador={setCuidador} mae={mae} gerarMsg={gerarMsgCuidador} enviarWhatsApp={enviarWhatsApp} msgCopiada={msgCopiada} setMsgCopiada={setMsgCopiada} />}
         {tela === "direitos" && <TelaDireitos direitoAberto={direitoAberto} setDireitoAberto={setDireitoAberto} checklistFeito={checklistFeito} setChecklistFeito={setChecklistFeito} setTela={setTela} />}
         {tela === "gerenciar-filhos" && <TelaGerenciarFilhos filhos={filhos} setFilhos={setFilhos} onSalvarPerfil={onSalvarPerfil} mae={mae} filhoSelecionado={filhoSelecionado} setFilhoSelecionado={setFilhoSelecionado} />}
+        {tela === "diario" && <TelaDiario registros={registros} setRegistros={setRegistros} novoRegistro={novoRegistro} setNovoRegistro={setNovoRegistro} filho={filho} />}
+        {tela === "financeiro" && <TelaFinanceiro gastos={gastos} setGastos={setGastos} novoGasto={novoGasto} setNovoGasto={setNovoGasto} orcamento={orcamento} setOrcamento={setOrcamento} filho={filho} />}
+        {tela === "contatos" && <TelaContatos contatos={contatos} setContatos={setContatos} novoContato={novoContato} setNovoContato={setNovoContato} />}
       </main>
     </div>
   );
@@ -1935,6 +1955,449 @@ function TelaGerenciarFilhos({filhos, setFilhos, onSalvarPerfil, mae, filhoSelec
           </div>
           <button onClick={adicionarFilho} style={{width:"100%",padding:"15px",fontSize:15,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#3d9b7a,#5bb89a)",boxShadow:"0 6px 18px rgba(61,155,122,0.32)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             <Plus size={17}/> Adicionar Filho
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── DIÁRIO DE COMPORTAMENTO ──────────────────────────────────────────────────
+function TelaDiario({registros, setRegistros, novoRegistro, setNovoRegistro, filho}) {
+  const TIPOS = [
+    {id:"crise_sensorial", nome:"😖 Crise Sensorial", cor:"#e07b39"},
+    {id:"agressividade", nome:"😠 Agressividade", cor:"#c0392b"},
+    {id:"euforia", nome:"😄 Euforia", cor:"#f39c12"},
+    {id:"estereotipia", nome:"🔄 Estereotipia", cor:"#3498db"},
+    {id:"ansiedade", nome:"😰 Ansiedade", cor:"#9b59b6"},
+    {id:"positivo", nome:"✨ Momento Positivo", cor:"#27ae60"},
+    {id:"outro", nome:"📝 Outro", cor:"#7f8c8d"}
+  ];
+  
+  const GATILHOS = [
+    "Barulho alto", "Mudança de rotina", "Ambiente lotado", 
+    "Transição de atividade", "Fome/Sede", "Cansaço/Sono",
+    "Frustração", "Dor física", "Ansiedade", "Outro"
+  ];
+  
+  function adicionarRegistro() {
+    if (!novoRegistro.tipo || !novoRegistro.data) return;
+    setRegistros(prev => [...prev, {...novoRegistro, id:Date.now(), filho:filho?.nome}]);
+    setNovoRegistro({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
+  }
+  
+  // Estatísticas
+  const registrosFilho = registros.filter(r => r.filho === filho?.nome);
+  const ultimosMes = registrosFilho.filter(r => {
+    const diff = Date.now() - new Date(r.data).getTime();
+    return diff < 30 * 24 * 60 * 60 * 1000;
+  });
+  
+  const frequenciaPorTipo = TIPOS.map(t => ({
+    ...t,
+    count: ultimosMes.filter(r => r.tipo === t.id).length
+  })).filter(t => t.count > 0);
+  
+  return (
+    <div>
+      <h1 style={{fontWeight:800,fontSize:14,color:"#222",marginBottom:4}}>📊 Diário de Comportamento</h1>
+      <p style={{color:"#1a1a1a",fontSize:15,marginBottom:24}}>Registre eventos e identifique padrões de {filho?.nome}</p>
+      
+      {/* Estatísticas */}
+      {ultimosMes.length > 0 && (
+        <div className="card" style={{marginBottom:24, background:"linear-gradient(135deg, #f0eaf8, #e8f5f0)"}}>
+          <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 12px",color:"#7c5cbf",display:"flex",alignItems:"center",gap:8}}>
+            <TrendingUp size={18}/> Últimos 30 dias
+          </h3>
+          <p style={{fontSize:13,color:"#666",marginBottom:12}}>Total de registros: <strong>{ultimosMes.length}</strong></p>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {frequenciaPorTipo.map(t => (
+              <div key={t.id} style={{background:"white",padding:"6px 12px",borderRadius:8,border:`2px solid ${t.cor}`,display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:13}}>{t.nome.split(" ")[0]}</span>
+                <span style={{fontWeight:800,color:t.cor,fontSize:14}}>{t.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Formulário */}
+      <div className="card" style={{marginBottom:24}}>
+        <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#3d9b7a",display:"flex",alignItems:"center",gap:8}}>
+          <Plus size={18}/> Novo Registro
+        </h3>
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div>
+            <label style={{fontSize:13,fontWeight:700,color:"#333",display:"block",marginBottom:6}}>TIPO DE EVENTO</label>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(140px, 1fr))",gap:8}}>
+              {TIPOS.map(t => (
+                <button key={t.id} onClick={()=>setNovoRegistro(p=>({...p,tipo:t.id}))} style={{padding:"10px",borderRadius:10,border:`2px solid ${novoRegistro.tipo===t.id?t.cor:"#e5e7eb"}`,background:novoRegistro.tipo===t.id?t.cor:"white",color:novoRegistro.tipo===t.id?"white":"#333",fontWeight:700,fontSize:13,cursor:"pointer",transition:"all .2s",fontFamily:"inherit"}}>
+                  {t.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
+            <CampoInput icon={<Calendar size={19}/>} label="DATA">
+              <input style={inputBare} type="date" value={novoRegistro.data} onChange={e=>setNovoRegistro(p=>({...p,data:e.target.value}))}/>
+            </CampoInput>
+            <CampoInput icon={<Clock size={19}/>} label="HORA">
+              <input style={inputBare} type="time" value={novoRegistro.hora} onChange={e=>setNovoRegistro(p=>({...p,hora:e.target.value}))}/>
+            </CampoInput>
+            <CampoInput icon={<Clock size={19}/>} label="DURAÇÃO (MIN)">
+              <input style={inputBare} type="number" placeholder="Ex: 15" value={novoRegistro.duracao} onChange={e=>setNovoRegistro(p=>({...p,duracao:e.target.value}))} min="0"/>
+            </CampoInput>
+          </div>
+          
+          <CampoInput icon={<Zap size={19}/>} label="GATILHO / SITUAÇÃO">
+            <select style={{...inputBare,cursor:"pointer"}} value={novoRegistro.gatilho} onChange={e=>setNovoRegistro(p=>({...p,gatilho:e.target.value}))}>
+              <option value="">Selecione...</option>
+              {GATILHOS.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </CampoInput>
+          
+          <CampoInput icon={<Check size={19}/>} label="O QUE AJUDOU">
+            <input style={inputBare} placeholder="Ex: Abraço firme, música calma, espaço silencioso" value={novoRegistro.oQueAjudou} onChange={e=>setNovoRegistro(p=>({...p,oQueAjudou:e.target.value}))}/>
+          </CampoInput>
+          
+          <CampoInput icon={<FileText size={19}/>} label="OBSERVAÇÕES">
+            <textarea style={{...inputBare,minHeight:60,resize:"vertical"}} placeholder="Detalhes adicionais..." value={novoRegistro.notas} onChange={e=>setNovoRegistro(p=>({...p,notas:e.target.value}))}/>
+          </CampoInput>
+          
+          <button onClick={adicionarRegistro} style={{width:"100%",padding:"15px",fontSize:15,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#7c5cbf,#9b7dd4)",boxShadow:"0 5px 14px rgba(124,92,191,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <Plus size={17}/> Adicionar Registro
+          </button>
+        </div>
+      </div>
+      
+      {/* Lista de registros */}
+      <div className="card">
+        <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#222"}}>📋 Histórico ({registrosFilho.length})</h3>
+        {registrosFilho.length === 0 ? (
+          <p style={{color:"#666",textAlign:"center",padding:20}}>Nenhum registro ainda</p>
+        ) : (
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {[...registrosFilho].reverse().map(r => {
+              const tipo = TIPOS.find(t => t.id === r.tipo);
+              return (
+                <div key={r.id} style={{background:"#fafbfa",border:`2px solid ${tipo?.cor}`,borderRadius:14,padding:"12px 14px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                    <div>
+                      <span style={{fontSize:15,fontWeight:800,color:tipo?.cor}}>{tipo?.nome}</span>
+                      <p style={{fontSize:13,color:"#666",margin:"2px 0 0"}}>{r.data} {r.hora && `às ${r.hora}`}</p>
+                    </div>
+                    <button onClick={()=>setRegistros(prev=>prev.filter(x=>x.id!==r.id))} style={{background:"#fef0f0",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#c0392b"}}>
+                      <Trash2 size={14}/>
+                    </button>
+                  </div>
+                  {r.duracao && <p style={{fontSize:13,color:"#333",margin:"4px 0"}}><strong>Duração:</strong> {r.duracao} min</p>}
+                  {r.gatilho && <p style={{fontSize:13,color:"#333",margin:"4px 0"}}><strong>Gatilho:</strong> {r.gatilho}</p>}
+                  {r.oQueAjudou && <p style={{fontSize:13,color:"#27ae60",margin:"4px 0",background:"#e8f6ee",padding:"6px 8px",borderRadius:6}}><strong>✅ O que ajudou:</strong> {r.oQueAjudou}</p>}
+                  {r.notas && <p style={{fontSize:13,color:"#666",margin:"4px 0",fontStyle:"italic"}}>{r.notas}</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── CONTROLE FINANCEIRO ──────────────────────────────────────────────────────
+function TelaFinanceiro({gastos, setGastos, novoGasto, setNovoGasto, orcamento, setOrcamento, filho}) {
+  const CATEGORIAS = [
+    {id:"medicamentos", nome:"💊 Medicamentos", cor:"#3498db"},
+    {id:"terapias", nome:"🧠 Terapias", cor:"#9b59b6"},
+    {id:"transporte", nome:"🚗 Transporte", cor:"#e67e22"},
+    {id:"alimentacao", nome:"🍽️ Alimentação", cor:"#27ae60"},
+    {id:"outros", nome:"📦 Outros", cor:"#95a5a6"}
+  ];
+  
+  const [editandoOrcamento, setEditandoOrcamento] = useState(false);
+  
+  function adicionarGasto() {
+    if (!novoGasto.categoria || !novoGasto.valor || !novoGasto.data) return;
+    setGastos(prev => [...prev, {...novoGasto, id:Date.now(), filho:filho?.nome}]);
+    setNovoGasto({ categoria:"", valor:"", data:"", descricao:"" });
+  }
+  
+  // Estatísticas
+  const gastosFilho = gastos.filter(g => g.filho === filho?.nome);
+  const mesAtual = new Date().getMonth();
+  const anoAtual = new Date().getFullYear();
+  const gastosMesAtual = gastosFilho.filter(g => {
+    const d = new Date(g.data);
+    return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+  });
+  
+  const totalPorCategoria = CATEGORIAS.map(c => ({
+    ...c,
+    total: gastosMesAtual.filter(g => g.categoria === c.id).reduce((sum, g) => sum + parseFloat(g.valor || 0), 0)
+  }));
+  
+  const totalGeral = totalPorCategoria.reduce((sum, c) => sum + c.total, 0);
+  const totalOrcamento = Object.values(orcamento).reduce((sum, v) => sum + parseFloat(v || 0), 0);
+  
+  return (
+    <div>
+      <h1 style={{fontWeight:800,fontSize:14,color:"#222",marginBottom:4}}>💰 Controle Financeiro</h1>
+      <p style={{color:"#1a1a1a",fontSize:15,marginBottom:24}}>Acompanhe gastos com {filho?.nome}</p>
+      
+      {/* Resumo Mensal */}
+      <div className="card" style={{marginBottom:24, background:"linear-gradient(135deg, #e8f5f0, #f0eaf8)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <h3 style={{fontWeight:800,fontSize:15,margin:0,color:"#3d9b7a",display:"flex",alignItems:"center",gap:8}}>
+            <PieChart size={18}/> Mês Atual
+          </h3>
+          <button onClick={()=>setEditandoOrcamento(!editandoOrcamento)} style={{background:"white",border:"1.5px solid #3d9b7a",color:"#3d9b7a",borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+            {editandoOrcamento ? "Salvar" : "Editar Orçamento"}
+          </button>
+        </div>
+        
+        <div style={{background:"white",borderRadius:12,padding:16,marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+            <span style={{fontSize:13,color:"#666"}}>Total Gasto:</span>
+            <span style={{fontSize:18,fontWeight:800,color:totalGeral > totalOrcamento ? "#c0392b" : "#27ae60"}}>
+              R$ {totalGeral.toFixed(2)}
+            </span>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between"}}>
+            <span style={{fontSize:13,color:"#666"}}>Orçamento:</span>
+            <span style={{fontSize:15,fontWeight:700,color:"#666"}}>R$ {totalOrcamento.toFixed(2)}</span>
+          </div>
+        </div>
+        
+        {totalOrcamento > 0 && (
+          <div>
+            <div style={{width:"100%",height:10,background:"#e5e7eb",borderRadius:10,overflow:"hidden",marginBottom:12}}>
+              <div style={{width:`${Math.min((totalGeral/totalOrcamento)*100, 100)}%`,height:"100%",background:totalGeral > totalOrcamento ? "linear-gradient(90deg,#c0392b,#e74c3c)" : "linear-gradient(90deg,#27ae60,#2ecc71)",transition:"width .3s"}}/>
+            </div>
+            <p style={{fontSize:12,textAlign:"center",color:totalGeral > totalOrcamento ? "#c0392b" : "#666"}}>
+              {totalGeral > totalOrcamento ? `⚠️ Ultrapassou em R$ ${(totalGeral - totalOrcamento).toFixed(2)}` : `Restante: R$ ${(totalOrcamento - totalGeral).toFixed(2)}`}
+            </p>
+          </div>
+        )}
+        
+        {/* Orçamento por categoria */}
+        {editandoOrcamento && (
+          <div style={{marginTop:16,padding:"12px",background:"#fff8f0",borderRadius:10,border:"1.5px dashed #e07b39"}}>
+            <p style={{fontSize:12,fontWeight:700,color:"#e07b39",marginBottom:12}}>DEFINIR ORÇAMENTO MENSAL:</p>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(140px, 1fr))",gap:10}}>
+              {CATEGORIAS.map(c => (
+                <div key={c.id} style={{display:"flex",flexDirection:"column",gap:4}}>
+                  <label style={{fontSize:11,fontWeight:700,color:"#666"}}>{c.nome}</label>
+                  <input type="number" placeholder="0.00" value={orcamento[c.id]||""} onChange={e=>setOrcamento(p=>({...p,[c.id]:e.target.value}))} style={{padding:"6px 8px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:13,fontWeight:600}}/>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Gráfico por Categoria */}
+      {totalPorCategoria.some(c => c.total > 0) && (
+        <div className="card" style={{marginBottom:24}}>
+          <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#222"}}>📊 Por Categoria</h3>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {totalPorCategoria.filter(c => c.total > 0).map(c => {
+              const percent = totalGeral > 0 ? (c.total / totalGeral) * 100 : 0;
+              const orcCat = parseFloat(orcamento[c.id] || 0);
+              const ultrapassou = orcCat > 0 && c.total > orcCat;
+              return (
+                <div key={c.id}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                    <span style={{fontSize:13,fontWeight:700}}>{c.nome}</span>
+                    <span style={{fontSize:13,fontWeight:800,color:ultrapassou?"#c0392b":c.cor}}>R$ {c.total.toFixed(2)}</span>
+                  </div>
+                  <div style={{width:"100%",height:8,background:"#e5e7eb",borderRadius:8,overflow:"hidden"}}>
+                    <div style={{width:`${percent}%`,height:"100%",background:ultrapassou?"#c0392b":c.cor,transition:"width .3s"}}/>
+                  </div>
+                  {orcCat > 0 && (
+                    <p style={{fontSize:11,color:ultrapassou?"#c0392b":"#666",marginTop:2}}>
+                      {ultrapassou ? `⚠️ Ultrapassou R$ ${(c.total - orcCat).toFixed(2)}` : `Restante: R$ ${(orcCat - c.total).toFixed(2)}`}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      
+      {/* Formulário */}
+      <div className="card" style={{marginBottom:24}}>
+        <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#3d9b7a",display:"flex",alignItems:"center",gap:8}}>
+          <Plus size={18}/> Novo Gasto
+        </h3>
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div>
+            <label style={{fontSize:13,fontWeight:700,color:"#333",display:"block",marginBottom:6}}>CATEGORIA</label>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(120px, 1fr))",gap:8}}>
+              {CATEGORIAS.map(c => (
+                <button key={c.id} onClick={()=>setNovoGasto(p=>({...p,categoria:c.id}))} style={{padding:"10px",borderRadius:10,border:`2px solid ${novoGasto.categoria===c.id?c.cor:"#e5e7eb"}`,background:novoGasto.categoria===c.id?c.cor:"white",color:novoGasto.categoria===c.id?"white":"#333",fontWeight:700,fontSize:13,cursor:"pointer",transition:"all .2s",fontFamily:"inherit"}}>
+                  {c.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <CampoInput icon={<DollarSign size={19}/>} label="VALOR (R$)">
+              <input style={inputBare} type="number" step="0.01" placeholder="0.00" value={novoGasto.valor} onChange={e=>setNovoGasto(p=>({...p,valor:e.target.value}))} min="0"/>
+            </CampoInput>
+            <CampoInput icon={<Calendar size={19}/>} label="DATA">
+              <input style={inputBare} type="date" value={novoGasto.data} onChange={e=>setNovoGasto(p=>({...p,data:e.target.value}))}/>
+            </CampoInput>
+          </div>
+          
+          <CampoInput icon={<FileText size={19}/>} label="DESCRIÇÃO">
+            <input style={inputBare} placeholder="Ex: Consulta com neurologista" value={novoGasto.descricao} onChange={e=>setNovoGasto(p=>({...p,descricao:e.target.value}))}/>
+          </CampoInput>
+          
+          <button onClick={adicionarGasto} style={{width:"100%",padding:"15px",fontSize:15,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#27ae60,#2ecc71)",boxShadow:"0 5px 14px rgba(39,174,96,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <Plus size={17}/> Adicionar Gasto
+          </button>
+        </div>
+      </div>
+      
+      {/* Histórico */}
+      <div className="card">
+        <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#222"}}>📋 Histórico de Gastos ({gastosFilho.length})</h3>
+        {gastosFilho.length === 0 ? (
+          <p style={{color:"#666",textAlign:"center",padding:20}}>Nenhum gasto registrado</p>
+        ) : (
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {[...gastosFilho].reverse().map(g => {
+              const cat = CATEGORIAS.find(c => c.id === g.categoria);
+              return (
+                <div key={g.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#fafbfa",border:"1.5px solid #e5e7eb",borderRadius:10,padding:"10px 12px"}}>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
+                      <span style={{fontSize:15}}>{cat?.nome.split(" ")[0]}</span>
+                      <span style={{fontSize:14,fontWeight:800,color:cat?.cor}}>R$ {parseFloat(g.valor).toFixed(2)}</span>
+                    </div>
+                    <p style={{fontSize:12,color:"#666",margin:0}}>{g.data} • {g.descricao}</p>
+                  </div>
+                  <button onClick={()=>setGastos(prev=>prev.filter(x=>x.id!==g.id))} style={{background:"#fef0f0",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#c0392b"}}>
+                    <Trash2 size={14}/>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── REDE DE APOIO / CONTATOS ─────────────────────────────────────────────────
+function TelaContatos({contatos, setContatos, novoContato, setNovoContato}) {
+  const CATEGORIAS = [
+    {id:"medicos", nome:"🏥 Médicos", cor:"#3498db"},
+    {id:"terapeutas", nome:"🧠 Terapeutas", cor:"#9b59b6"},
+    {id:"familia", nome:"👨‍👩‍👧 Família", cor:"#27ae60"},
+    {id:"emergencia", nome:"🚑 Emergência", cor:"#c0392b"},
+    {id:"escola", nome:"🏫 Escola/Creche", cor:"#e67e22"}
+  ];
+  
+  function adicionarContato() {
+    if (!novoContato.nome || !novoContato.categoria || !novoContato.telefone) return;
+    setContatos(prev => [...prev, {...novoContato, id:Date.now()}]);
+    setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
+  }
+  
+  const contatosPorCategoria = CATEGORIAS.map(c => ({
+    ...c,
+    contatos: contatos.filter(ct => ct.categoria === c.id)
+  })).filter(c => c.contatos.length > 0);
+  
+  function ligar(telefone) {
+    window.location.href = `tel:${telefone}`;
+  }
+  
+  function whatsapp(telefone) {
+    const tel = telefone.replace(/\D/g, '');
+    window.open(`https://wa.me/55${tel}`, '_blank');
+  }
+  
+  return (
+    <div>
+      <h1 style={{fontWeight:800,fontSize:14,color:"#222",marginBottom:4}}>📞 Rede de Apoio</h1>
+      <p style={{color:"#1a1a1a",fontSize:15,marginBottom:24}}>Seus contatos de confiança organizados</p>
+      
+      {/* Contatos por Categoria */}
+      {contatosPorCategoria.map(cat => (
+        <div key={cat.id} className="card" style={{marginBottom:20}}>
+          <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 12px",color:cat.cor,display:"flex",alignItems:"center",gap:8}}>
+            {cat.nome} ({cat.contatos.length})
+          </h3>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {cat.contatos.map(c => (
+              <div key={c.id} style={{background:"#fafbfa",border:`2px solid ${cat.cor}`,borderRadius:12,padding:"12px 14px"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:15,fontWeight:800,color:"#222",margin:"0 0 4px"}}>{c.nome}</p>
+                    {c.especialidade && <p style={{fontSize:13,color:"#666",margin:"0 0 4px"}}>{c.especialidade}</p>}
+                    <p style={{fontSize:14,fontWeight:700,color:cat.cor,margin:0}}>{c.telefone}</p>
+                    {c.notas && <p style={{fontSize:12,color:"#666",margin:"4px 0 0",fontStyle:"italic"}}>{c.notas}</p>}
+                  </div>
+                  <button onClick={()=>setContatos(prev=>prev.filter(x=>x.id!==c.id))} style={{background:"#fef0f0",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#c0392b"}}>
+                    <Trash2 size={14}/>
+                  </button>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>ligar(c.telefone)} style={{flex:1,background:cat.cor,color:"white",border:"none",borderRadius:10,padding:"10px",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"inherit"}}>
+                    <Phone size={14}/> Ligar
+                  </button>
+                  <button onClick={()=>whatsapp(c.telefone)} style={{flex:1,background:"#25d366",color:"white",border:"none",borderRadius:10,padding:"10px",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"inherit"}}>
+                    <MessageCircle size={14}/> WhatsApp
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      
+      {/* Formulário */}
+      <div className="card">
+        <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#3d9b7a",display:"flex",alignItems:"center",gap:8}}>
+          <Plus size={18}/> Novo Contato
+        </h3>
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div>
+            <label style={{fontSize:13,fontWeight:700,color:"#333",display:"block",marginBottom:6}}>CATEGORIA</label>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(120px, 1fr))",gap:8}}>
+              {CATEGORIAS.map(c => (
+                <button key={c.id} onClick={()=>setNovoContato(p=>({...p,categoria:c.id}))} style={{padding:"10px",borderRadius:10,border:`2px solid ${novoContato.categoria===c.id?c.cor:"#e5e7eb"}`,background:novoContato.categoria===c.id?c.cor:"white",color:novoContato.categoria===c.id?"white":"#333",fontWeight:700,fontSize:13,cursor:"pointer",transition:"all .2s",fontFamily:"inherit"}}>
+                  {c.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <CampoInput icon={<User size={19}/>} label="NOME COMPLETO">
+            <input style={inputBare} placeholder="Ex: Dr. João Silva" value={novoContato.nome} onChange={e=>setNovoContato(p=>({...p,nome:e.target.value}))}/>
+          </CampoInput>
+          
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <CampoInput icon={<Phone size={19}/>} label="TELEFONE">
+              <input style={inputBare} type="tel" placeholder="(61) 9 9999-9999" value={novoContato.telefone} onChange={e=>setNovoContato(p=>({...p,telefone:e.target.value}))}/>
+            </CampoInput>
+            <CampoInput icon={<Star size={19}/>} label="ESPECIALIDADE">
+              <input style={inputBare} placeholder="Ex: Neuropediatra" value={novoContato.especialidade} onChange={e=>setNovoContato(p=>({...p,especialidade:e.target.value}))}/>
+            </CampoInput>
+          </div>
+          
+          <CampoInput icon={<FileText size={19}/>} label="OBSERVAÇÕES">
+            <input style={inputBare} placeholder="Ex: Atende terças 14h-18h" value={novoContato.notas} onChange={e=>setNovoContato(p=>({...p,notas:e.target.value}))}/>
+          </CampoInput>
+          
+          <button onClick={adicionarContato} style={{width:"100%",padding:"15px",fontSize:15,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#3498db,#5dade2)",boxShadow:"0 5px 14px rgba(52,152,219,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <Plus size={17}/> Adicionar Contato
           </button>
         </div>
       </div>
