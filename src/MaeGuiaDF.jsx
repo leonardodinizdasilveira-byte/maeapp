@@ -336,15 +336,14 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
         remedios, 
         exames, 
         atividades, 
-        documentos, 
-        cuidador, 
         registros, 
         gastos, 
         orcamento, 
-        contatos 
+        contatos,
+        documentos // Incluindo documentos
       });
     }
-  }, [mae, filhos, remedios, exames, atividades, documentos, cuidador, registros, gastos, orcamento, contatos]);
+  }, [mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos, JSON.stringify(documentos)]);
 
   // Sistema de verificação automática de alertas
   useEffect(() => {
