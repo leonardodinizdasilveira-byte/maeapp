@@ -261,7 +261,7 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [remedios, setRemedios] = useState([]);
   const [exames, setExames] = useState([]);
   const [novoRemedio, setNovoRemedio] = useState({ nome:"", dosagem:"", dias:[], horario:"" });
-  const [novoExame, setNovoExame] = useState({ titulo:"", local:"", data:"", hora:"", notas:"" });
+  const [novoExame, setNovoExame] = useState({ titulo:"", local:"", data:"", hora:"", notas:"", horasAntesPreparacao:1 });
   const [alarmeAtivo, setAlarmeAtivo] = useState(false);
   const [alarmeMsg, setAlarmeMsg] = useState("");
   const audioCtxRef = useRef(null);
@@ -317,15 +317,28 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
         }
       });
       
-      // Verificar exames (alertar 24h antes)
+      // Verificar exames (sistema de 2 alarmes)
       exames.forEach(e => {
-        const dataExame = new Date(e.data + 'T' + e.hora);
-        const diff = dataExame - agora;
-        const horas24 = 24 * 60 * 60 * 1000;
+        if (!e.data || !e.hora) return;
         
-        // Se falta exatamente 24h (com margem de 1 minuto)
+        const [ano, mes, dia] = e.data.split('-');
+        const [hora, minuto] = e.hora.split(':');
+        const dataExame = new Date(ano, mes-1, dia, hora, minuto);
+        const diff = dataExame - agora;
+        const horasEmMs = 60 * 60 * 1000;
+        const horas24 = 24 * horasEmMs;
+        
+        // ALARME 1: Lembrete 24h antes (com margem de 1 minuto)
         if (diff > horas24 - 60000 && diff < horas24 + 60000) {
-          tocarAlarme(`📅 LEMBRETE DE EXAME!\n\n${e.titulo}\nLocal: ${e.local}\nAmanhã às ${e.hora}\n\n${e.notas || ''}`);
+          tocarAlarme(`🔔 LEMBRETE DE EXAME!\n\n📅 AMANHÃ você tem:\n${e.titulo}\n\n📍 Local: ${e.local}\n⏰ Horário: ${e.hora}\n\n${e.notas || ''}`);
+        }
+        
+        // ALARME 2: Preparação (X horas antes do exame)
+        const horasAntes = e.horasAntesPreparacao || 1;
+        const tempoPreparacao = horasAntes * horasEmMs;
+        if (diff > tempoPreparacao - 60000 && diff < tempoPreparacao + 60000) {
+          const txtHoras = horasAntes === 1 ? '1 hora' : `${horasAntes} horas`;
+          tocarAlarme(`⏰ HORA DE SE PREPARAR!\n\n📅 Daqui ${txtHoras} você tem:\n${e.titulo}\n\n📍 Local: ${e.local}\n⏰ Horário: ${e.hora}\n\n🚿 Comece a se arrumar e prepare ${filho?.nome || 'o paciente'}!`);
         }
       });
     };
@@ -525,6 +538,7 @@ _Enviado via MãeGuia DF_ 💜`;
     { id:"documentos", icon:<Folder size={18}/>, label:"Meu Arquivo" },
     { id:"cuidador", icon:<Users size={18}/>, label:"Cuidador" },
     { id:"direitos", icon:<BookOpen size={18}/>, label:"Guia de Direitos" },
+    { id:"gerenciar-filhos", icon:<Baby size={18}/>, label:"Gerenciar Filhos" },
   ];
 
   if (!isLoggedIn) return <Onboarding
@@ -715,6 +729,7 @@ _Enviado via MãeGuia DF_ 💜`;
         {tela === "documentos" && <TelaDocumentos filho={filho} filhoSelecionado={filhoSelecionado} getDocFilho={getDocFilho} setDocFilho={setDocFilho} gaveta={gaveta} setGaveta={setGaveta} uploadProgress={uploadProgress} cameraInputRef={cameraInputRef} galeriaInputRef={galeriaInputRef} handleUpload={handleUpload} />}
         {tela === "cuidador" && <TelaCuidador filho={filho} filhoSelecionado={filhoSelecionado} cuidador={cuidador} setCuidador={setCuidador} mae={mae} gerarMsg={gerarMsgCuidador} enviarWhatsApp={enviarWhatsApp} msgCopiada={msgCopiada} setMsgCopiada={setMsgCopiada} />}
         {tela === "direitos" && <TelaDireitos direitoAberto={direitoAberto} setDireitoAberto={setDireitoAberto} checklistFeito={checklistFeito} setChecklistFeito={setChecklistFeito} setTela={setTela} />}
+        {tela === "gerenciar-filhos" && <TelaGerenciarFilhos filhos={filhos} setFilhos={setFilhos} onSalvarPerfil={onSalvarPerfil} mae={mae} filhoSelecionado={filhoSelecionado} setFilhoSelecionado={setFilhoSelecionado} />}
       </main>
     </div>
   );
@@ -911,10 +926,17 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
             <h1 style={{fontWeight:800, fontSize:14, color:"#222", margin:0}}>Dashboard</h1>
             <p style={{color:"#1a1a1a", fontSize:15}}>{hoje.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</p>
           </div>
-          {filhos.length > 1 && (
-            <select value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"var(--mint-light)", border:"1.5px solid var(--mint-mid)", borderRadius:12, padding:"8px 14px", fontWeight:700, fontSize:14, color:"#3d9b7a", cursor:"pointer", fontFamily:"inherit"}}>
-              {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
-            </select>
+          
+          {/* Gerenciamento de Filhos */}
+          {filhos.length > 0 && (
+            <div style={{display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+              <select value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"var(--mint-light)", border:"1.5px solid var(--mint-mid)", borderRadius:12, padding:"8px 14px", fontWeight:700, fontSize:14, color:"#3d9b7a", cursor:"pointer", fontFamily:"inherit"}}>
+                {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
+              </select>
+              <button onClick={()=>setTela("gerenciar-filhos")} style={{background:"var(--lav)", color:"white", border:"none", borderRadius:12, padding:"8px 14px", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"inherit", display:"flex", alignItems:"center", gap:6}}>
+                <Plus size={14}/> Adicionar Filho
+              </button>
+            </div>
           )}
         </div>
         
@@ -1145,7 +1167,7 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
   function addExame() {
     if (!novoExame.titulo || !novoExame.data) return;
     setExames(p=>[...p, {...novoExame, id:Date.now()}]);
-    setNovoExame({titulo:"",local:"",data:"",hora:"",notas:""});
+    setNovoExame({titulo:"",local:"",data:"",hora:"",notas:"",horasAntesPreparacao:1});
   }
   function marcarMinistrado(id) { setRemedios(p=>p.map(r=>r.id===id ? {...r,ministrado:true}:r)); }
   
@@ -1367,7 +1389,21 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
                 <input style={inputBare} type="time" value={novoExame.hora} onChange={e=>setNovoExame(p=>({...p,hora:e.target.value}))}/>
               </CampoInput>
             </div>
-            <CampoInput icon={<AlertTriangle size={19}/>} label="NOTAS IMPORTANTES" dica="Avisaremos você na véspera com essas observações.">
+            
+            <div>
+              <label style={{fontSize:13,fontWeight:700,color:"#333",display:"block",marginBottom:6}}>⏰ ALARME DE PREPARAÇÃO</label>
+              <p style={{fontSize:12,color:"#666",marginBottom:8}}>Quantas horas ANTES do exame você quer ser avisado para se arrumar?</p>
+              <select value={novoExame.horasAntesPreparacao} onChange={e=>setNovoExame(p=>({...p,horasAntesPreparacao:+e.target.value}))} className="select-field">
+                <option value="0.5">30 minutos antes</option>
+                <option value="1">1 hora antes</option>
+                <option value="1.5">1h30 antes</option>
+                <option value="2">2 horas antes</option>
+                <option value="3">3 horas antes</option>
+                <option value="4">4 horas antes</option>
+              </select>
+            </div>
+            
+            <CampoInput icon={<AlertTriangle size={19}/>} label="NOTAS IMPORTANTES" dica="Observações como jejum, documentos, etc.">
               <input style={inputBare} placeholder="Ex: Jejum de 8h, levar laudo antigo" value={novoExame.notas} onChange={e=>setNovoExame(p=>({...p,notas:e.target.value}))}/>
             </CampoInput>
             <button onClick={addExame} style={{width:"100%",padding:"15px",fontSize:14,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#7c5cbf,#9b7dd4)",boxShadow:"0 5px 14px rgba(124,92,191,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -1376,21 +1412,33 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
           </div>
         </div>
         {exames.length === 0 ? <p style={{color:"#1a1a1a",textAlign:"center",padding:20}}>Nenhum exame agendado.</p> :
-          exames.map(e=>(
-            <div key={e.id} style={{padding:"12px 14px",background:"#faf8ff",borderRadius:12,marginBottom:8,border:"1.5px solid #e8d8f4"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <div style={{flex:1}}>
-                  <p style={{fontWeight:700,margin:0,color:"#222"}}>{e.titulo}</p>
-                  <p style={{fontSize:14,color:"#1a1a1a",margin:"2px 0 0"}}>{e.data} às {e.hora} • {e.local}</p>
-                  {e.notas && <p style={{fontSize:14,color:"#e07b39",margin:"4px 0 0",background:"#fff8f0",padding:"4px 8px",borderRadius:6}}>⚠️ {e.notas}</p>}
-                </div>
-                <div style={{display:"flex",gap:6,marginLeft:10}}>
-                  <button onClick={()=>tocarAlarme(`📅 Lembrete: ${e.titulo} — Amanhã ${e.hora}${e.notas?` | ${e.notas}`:""}`)} style={{background:"#f0eaf8",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#7c5cbf"}}><Bell size={14}/></button>
-                  <button onClick={()=>setExames(p=>p.filter(x=>x.id!==e.id))} style={{background:"#fce4e4",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#c0392b"}}><Trash2 size={14}/></button>
+          exames.map(e=>{
+            const horasAntes = e.horasAntesPreparacao || 1;
+            const txtHoras = horasAntes === 1 ? '1 hora' : horasAntes < 1 ? '30 minutos' : `${horasAntes} horas`;
+            return (
+              <div key={e.id} style={{padding:"12px 14px",background:"#faf8ff",borderRadius:12,marginBottom:8,border:"1.5px solid #e8d8f4"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                  <div style={{flex:1}}>
+                    <p style={{fontWeight:700,margin:0,color:"#222"}}>{e.titulo}</p>
+                    <p style={{fontSize:14,color:"#1a1a1a",margin:"2px 0 0"}}>{e.data} às {e.hora} • {e.local}</p>
+                    {e.notas && <p style={{fontSize:14,color:"#e07b39",margin:"4px 0 0",background:"#fff8f0",padding:"4px 8px",borderRadius:6}}>⚠️ {e.notas}</p>}
+                    <div style={{marginTop:8,display:"flex",flexWrap:"wrap",gap:6}}>
+                      <span style={{fontSize:11,background:"#f0eaf8",color:"#7c5cbf",padding:"3px 8px",borderRadius:6,fontWeight:600}}>
+                        🔔 Lembrete: 24h antes
+                      </span>
+                      <span style={{fontSize:11,background:"#fff3e6",color:"#e07b39",padding:"3px 8px",borderRadius:6,fontWeight:600}}>
+                        ⏰ Preparação: {txtHoras} antes
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:6,marginLeft:10}}>
+                    <button onClick={()=>tocarAlarme(`📅 Teste de Alarme:\n${e.titulo}\nLocal: ${e.local}\nData: ${e.data} às ${e.hora}`)} style={{background:"#f0eaf8",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#7c5cbf"}}><Bell size={14}/></button>
+                    <button onClick={()=>setExames(p=>p.filter(x=>x.id!==e.id))} style={{background:"#fce4e4",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#c0392b"}}><Trash2 size={14}/></button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         }
       </div>
     </div>
@@ -1724,6 +1772,109 @@ function TelaDireitos({direitoAberto,setDireitoAberto,checklistFeito,setChecklis
               </div>
             );
           })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── GERENCIAR FILHOS ─────────────────────────────────────────────────────────
+function TelaGerenciarFilhos({filhos, setFilhos, onSalvarPerfil, mae, filhoSelecionado, setFilhoSelecionado}) {
+  const [novoFilho, setNovoFilho] = useState({nome:"", idade:"", diagnosticos:[]});
+  
+  function toggleDiag(d) {
+    setNovoFilho(prev => ({
+      ...prev,
+      diagnosticos: prev.diagnosticos.includes(d)
+        ? prev.diagnosticos.filter(x => x !== d)
+        : [...prev.diagnosticos, d]
+    }));
+  }
+  
+  function adicionarFilho() {
+    if (!novoFilho.nome.trim() || !novoFilho.idade) return;
+    const novosFilhos = [...filhos, {...novoFilho, id:Date.now()}];
+    setFilhos(novosFilhos);
+    onSalvarPerfil({mae, filhos:novosFilhos});
+    setNovoFilho({nome:"", idade:"", diagnosticos:[]});
+  }
+  
+  function removerFilho(idx) {
+    const novosFilhos = filhos.filter((_,i)=>i!==idx);
+    setFilhos(novosFilhos);
+    onSalvarPerfil({mae, filhos:novosFilhos});
+    if (filhoSelecionado >= novosFilhos.length) {
+      setFilhoSelecionado(Math.max(0, novosFilhos.length - 1));
+    }
+  }
+  
+  return (
+    <div>
+      <h1 style={{fontWeight:800,fontSize:14,color:"#222",marginBottom:4}}>Gerenciar Filhos</h1>
+      <p style={{color:"#1a1a1a",fontSize:15,marginBottom:24}}>Adicione ou remova filhos do seu cadastro</p>
+      
+      {/* Filhos cadastrados */}
+      {filhos.length > 0 && (
+        <div className="card" style={{marginBottom:24}}>
+          <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#222"}}>👶 Filhos Cadastrados ({filhos.length})</h3>
+          {filhos.map((f,i)=>(
+            <div key={f.id} style={{background:"#fff", border:"1.5px solid #d8efe6", borderRadius:16, padding:"14px 16px", marginBottom:12, display:"flex", alignItems:"center", justifyContent:"space-between", boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+              <div style={{display:"flex", alignItems:"center", gap:12}}>
+                <div style={{width:40, height:40, borderRadius:12, background:"linear-gradient(135deg,#e8f5f0,#f0eaf8)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0}}>
+                  <Baby size={20} color="#3d9b7a"/>
+                </div>
+                <div>
+                  <p style={{fontWeight:700, color:"#2f7d62", margin:0, fontSize:15}}>{f.nome}, {f.idade} anos</p>
+                  <p style={{fontSize:13, color:"#1a1a1a", margin:0}}>{f.diagnosticos.join(", ") || "Sem diagnóstico"}</p>
+                </div>
+              </div>
+              <button onClick={()=>removerFilho(i)} disabled={filhos.length===1} style={{background:filhos.length===1?"#f5f5f5":"#fef0f0", border:"none", borderRadius:10, padding:"8px", cursor:filhos.length===1?"not-allowed":"pointer", color:filhos.length===1?"#ccc":"#c0392b", display:"flex", opacity:filhos.length===1?0.5:1}}>
+                <Trash2 size={16}/>
+              </button>
+            </div>
+          ))}
+          {filhos.length === 1 && (
+            <p style={{fontSize:13,color:"#e07b39",background:"#fff8f0",padding:"8px 12px",borderRadius:8,margin:"8px 0 0"}}>
+              ⚠️ Você precisa ter pelo menos 1 filho cadastrado
+            </p>
+          )}
+        </div>
+      )}
+      
+      {/* Formulário adicionar filho */}
+      <div className="card">
+        <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 16px",color:"#7c5cbf",display:"flex",alignItems:"center",gap:8}}>
+          <Plus size={18}/> Adicionar Novo Filho
+        </h3>
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <CampoInput icon={<Baby size={19}/>} label="NOME DA CRIANÇA">
+            <input style={inputBare} placeholder="Nome do filho(a)" value={novoFilho.nome} onChange={e=>setNovoFilho(p=>({...p,nome:e.target.value}))}/>
+          </CampoInput>
+          <CampoInput icon={<Clock size={19}/>} label="IDADE">
+            <input style={inputBare} type="number" placeholder="Idade em anos" value={novoFilho.idade} onChange={e=>setNovoFilho(p=>({...p,idade:e.target.value}))} min="0" max="25"/>
+          </CampoInput>
+          <div>
+            <p style={{fontSize:13,fontWeight:600,color:"#333",marginBottom:6,marginLeft:4}}>DIAGNÓSTICO(S)</p>
+            <p style={{fontSize:12,color:"#666",marginBottom:10,marginLeft:4}}>Selecione um ou mais:</p>
+            <div style={{maxHeight:240,overflowY:"auto",border:"1.5px solid #e5e7eb",borderRadius:14,padding:10,background:"#fafbfa"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                {DIAGNOSTICOS.map(d=>{
+                  const on = novoFilho.diagnosticos.includes(d);
+                  return (
+                    <button key={d} onClick={()=>toggleDiag(d)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,fontSize:14,fontWeight:on?700:600,cursor:"pointer",border:"none",fontFamily:"inherit",transition:"all .15s",background:on?"#e8f5f0":"white",color:on?"#2f7d62":"#333",textAlign:"left",width:"100%"}}>
+                      <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${on?"#3d9b7a":"#d1d5db"}`,background:on?"#3d9b7a":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all .15s"}}>
+                        {on && <Check size={15} color="white" strokeWidth={3}/>}
+                      </div>
+                      {d}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <button onClick={adicionarFilho} style={{width:"100%",padding:"15px",fontSize:15,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#3d9b7a,#5bb89a)",boxShadow:"0 6px 18px rgba(61,155,122,0.32)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <Plus size={17}/> Adicionar Filho
+          </button>
         </div>
       </div>
     </div>
