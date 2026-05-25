@@ -247,9 +247,6 @@ function clearStore() {
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
-  // Debug
-  console.log("MaeGuiaDF renderizou com dadosPerfil:", dadosPerfil);
-  
   // Se tem dados do perfil (mae e filhos), já completou onboarding
   const perfilCompleto = dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0;
   const [isLoggedIn, setIsLoggedIn] = useState(() => perfilCompleto);
@@ -265,8 +262,8 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [onbErrors, setOnbErrors] = useState({});
 
   // Agenda
-  const [remedios, setRemedios] = useState([]);
-  const [exames, setExames] = useState([]);
+  const [remedios, setRemedios] = useState(dadosPerfil?.remedios || []);
+  const [exames, setExames] = useState(dadosPerfil?.exames || []);
   const [novoRemedio, setNovoRemedio] = useState({ nome:"", dosagem:"", dias:[], horario:"" });
   const [novoExame, setNovoExame] = useState({ titulo:"", local:"", data:"", hora:"", notas:"", horasAntesPreparacao:1 });
   const [alarmeAtivo, setAlarmeAtivo] = useState(false);
@@ -275,7 +272,7 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const alarmeIntervalRef = useRef(null);
 
   // Esteira de Evolução
-  const [atividades, setAtividades] = useState([]);
+  const [atividades, setAtividades] = useState(dadosPerfil?.atividades || []);
   const [novaAtividade, setNovaAtividade] = useState({ nome:"", profissional:"", horario:"", instrucoes:"" });
 
   // Gerador
@@ -284,14 +281,14 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [docSalvo, setDocSalvo] = useState(false);
 
   // Documentos
-  const [documentos, setDocumentos] = useState({});
+  const [documentos, setDocumentos] = useState(dadosPerfil?.documentos || {});
   const [uploadProgress, setUploadProgress] = useState({});
   const cameraInputRef = useRef(null);
   const galeriaInputRef = useRef(null);
   const [gaveta, setGaveta] = useState("Saúde");
 
   // Cuidador
-  const [cuidador, setCuidador] = useState({});
+  const [cuidador, setCuidador] = useState(dadosPerfil?.cuidador || {});
   const [msgCopiada, setMsgCopiada] = useState(false);
 
   // Direitos
@@ -333,11 +330,21 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   // Salvar no Firebase quando dados mudarem
   useEffect(() => {
     if (mae.nome || mae.celular || mae.regiao) {
-      const dadosParaSalvar = { mae, filhos, registros, gastos, orcamento, contatos };
-      console.log("Salvando no Firebase:", dadosParaSalvar);
-      onSalvarPerfil(dadosParaSalvar);
+      onSalvarPerfil({ 
+        mae, 
+        filhos, 
+        remedios, 
+        exames, 
+        atividades, 
+        documentos, 
+        cuidador, 
+        registros, 
+        gastos, 
+        orcamento, 
+        contatos 
+      });
     }
-  }, [mae, filhos, registros, gastos, orcamento, contatos]);
+  }, [mae, filhos, remedios, exames, atividades, documentos, cuidador, registros, gastos, orcamento, contatos]);
 
   // Sistema de verificação automática de alertas
   useEffect(() => {
