@@ -20,14 +20,21 @@ export default function App() {
           const perfilSnap = await getDoc(perfilRef);
           
           if (perfilSnap.exists()) {
-            setDadosPerfil(perfilSnap.data());
+            const data = perfilSnap.data();
+            console.log("Perfil carregado:", data); // DEBUG
+            setDadosPerfil(data);
+          } else {
+            console.log("Perfil não existe, onboarding necessário"); // DEBUG
+            setDadosPerfil({}); // Objeto vazio indica "sem perfil ainda"
           }
         } catch (error) {
           console.error("Erro ao buscar perfil:", error);
+          setDadosPerfil({}); // Em caso de erro, força onboarding
         }
         setUser(currentUser);
       } else {
         // Usuário deslogado
+        console.log("Usuário deslogado"); // DEBUG
         setUser(null);
         setDadosPerfil(null);
       }
@@ -39,15 +46,20 @@ export default function App() {
 
   // Salvar dados do perfil no Firebase quando houver mudanças
   async function salvarPerfil(dados) {
-    if (!user) return;
+    if (!user) {
+      console.error("Não há usuário logado");
+      return;
+    }
     
     try {
+      console.log("Salvando perfil:", dados); // DEBUG
       const perfilRef = doc(db, "perfis", user.uid);
       await setDoc(perfilRef, {
         ...dados,
         ultimaAtualizacao: new Date().toISOString()
       }, { merge: true });
       
+      console.log("Perfil salvo com sucesso"); // DEBUG
       setDadosPerfil(dados);
     } catch (error) {
       console.error("Erro ao salvar perfil:", error);
