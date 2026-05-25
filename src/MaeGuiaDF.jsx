@@ -255,6 +255,9 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [filhoSelecionado, setFilhoSelecionado] = useState(0);
   const [tela, setTela] = useState("dashboard");
   const [mobileMenu, setMobileMenu] = useState(false);
+  
+  // Modo Escuro
+  const [modoEscuro, setModoEscuro] = useState(() => dadosPerfil?.modoEscuro || false);
 
   // Onboarding state
   const [onbStep, setOnbStep] = useState(1); // 1=mãe, 2=filho
@@ -296,16 +299,16 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [checklistFeito, setChecklistFeito] = useState({});
   
   // Diário de Comportamento
-  const [registros, setRegistros] = useState([]);
+  const [registros, setRegistros] = useState(() => dadosPerfil?.registros || []);
   const [novoRegistro, setNovoRegistro] = useState({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
   
   // Financeiro
-  const [gastos, setGastos] = useState([]);
+  const [gastos, setGastos] = useState(() => dadosPerfil?.gastos || []);
   const [novoGasto, setNovoGasto] = useState({ categoria:"", valor:"", data:"", descricao:"" });
-  const [orcamento, setOrcamento] = useState({ medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
+  const [orcamento, setOrcamento] = useState(() => dadosPerfil?.orcamento || { medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
   
   // Contatos
-  const [contatos, setContatos] = useState([]);
+  const [contatos, setContatos] = useState(() => dadosPerfil?.contatos || []);
   const [novoContato, setNovoContato] = useState({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
 
   // GDF Alerta
@@ -319,6 +322,12 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
       setMae(dadosPerfil.mae);
       setFilhos(dadosPerfil.filhos);
       setIsLoggedIn(true);
+      // Carregar dados das novas funcionalidades
+      if (dadosPerfil.registros) setRegistros(dadosPerfil.registros);
+      if (dadosPerfil.gastos) setGastos(dadosPerfil.gastos);
+      if (dadosPerfil.orcamento) setOrcamento(dadosPerfil.orcamento);
+      if (dadosPerfil.contatos) setContatos(dadosPerfil.contatos);
+      if (dadosPerfil.modoEscuro !== undefined) setModoEscuro(dadosPerfil.modoEscuro);
     } else if (dadosPerfil === null) {
       // Se dadosPerfil é null, ainda está carregando - não fazer nada
     } else {
@@ -330,9 +339,17 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   // Salvar no Firebase quando dados mudarem
   useEffect(() => {
     if (mae.nome || mae.celular || mae.regiao) {
-      onSalvarPerfil({ mae, filhos });
+      onSalvarPerfil({ 
+        mae, 
+        filhos, 
+        registros, 
+        gastos, 
+        orcamento, 
+        contatos, 
+        modoEscuro 
+      });
     }
-  }, [mae, filhos]);
+  }, [mae, filhos, registros, gastos, orcamento, contatos, modoEscuro]);
 
   // Sistema de verificação automática de alertas
   useEffect(() => {
@@ -621,7 +638,7 @@ _Enviado via MãeGuia DF_ 💜`;
   />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-mint-50 via-lavender-50 to-white flex" style={{fontFamily:"'Nunito', system-ui, sans-serif"}}>
+    <div className="min-h-screen bg-gradient-to-br from-mint-50 via-lavender-50 to-white flex" style={{fontFamily:"'Nunito', system-ui, sans-serif", background:modoEscuro?"#1a1a1a":"", transition:"background .3s"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         :root{
@@ -629,6 +646,21 @@ _Enviado via MãeGuia DF_ 💜`;
           --lav:#7c5cbf; --lav-light:#f0eaf8; --lav-mid:#c9b8e8;
           --warn:#e07b39; --danger:#c0392b;
         }
+        /* MODO ESCURO */
+        ${modoEscuro ? `
+          body { background: #1a1a1a; }
+          .card { background: #2a2a2a !important; border: 1px solid #3a3a3a; }
+          .nav-item:hover { background: #3a3a3a !important; }
+          .nav-item.active { background: linear-gradient(135deg,#2a4a3a,#3a3a4a) !important; color: #5dbd96 !important; }
+          .input-field, .select-field { background: #2a2a2a !important; border-color: #3a3a3a !important; color: #e0e0e0 !important; }
+          .input-field:focus { border-color: #5dbd96 !important; }
+          h1, h2, h3, h4, h5, p, span, label, div { color: #e0e0e0 !important; }
+          .btn-outline { background: #2a2a2a !important; border-color: #5dbd96 !important; color: #5dbd96 !important; }
+          .btn-outline:hover { background: #3a4a3a !important; }
+          .gaveta-btn:not(.active) { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #3a3a3a !important; }
+          .mobile-menu-drawer, .sidebar { background: #2a2a2a !important; }
+          .mobile-bar { background: #2a2a2a !important; border-color: #3a3a3a !important; }
+        ` : ''}
         .mint-50{background:#e8f5f0} .mint-100{background:#b8e0d2}
         .lav-50{background:#f0eaf8} .lav-100{background:#c9b8e8}
         .nav-item{transition:all .2s; border-radius:12px; cursor:pointer;}
@@ -1008,9 +1040,13 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
             <p style={{color:"#1a1a1a", fontSize:15}}>{hoje.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</p>
           </div>
           
-          {/* Gerenciamento de Filhos */}
+          {/* Gerenciamento de Filhos + Modo Escuro */}
           {filhos.length > 0 && (
             <div style={{display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+              <button onClick={()=>setModoEscuro(!modoEscuro)} title={modoEscuro?"Modo Claro":"Modo Escuro"} style={{background:modoEscuro?"#3a3a3a":"#f0f0f0", border:"1.5px solid "+(modoEscuro?"#5a5a5a":"#d0d0d0"), borderRadius:12, padding:"8px 12px", cursor:"pointer", display:"flex", alignItems:"center", gap:6, fontFamily:"inherit"}}>
+                {modoEscuro ? <Eye size={16} color="#ffd700"/> : <Volume2 size={16} color="#666"/>}
+                <span style={{fontSize:12, fontWeight:700, color:modoEscuro?"#ffd700":"#666"}}>{modoEscuro?"🌙":"☀️"}</span>
+              </button>
               <select value={filhoSelecionado} onChange={e=>setFilhoSelecionado(+e.target.value)} style={{background:"var(--mint-light)", border:"1.5px solid var(--mint-mid)", borderRadius:12, padding:"8px 14px", fontWeight:700, fontSize:14, color:"#3d9b7a", cursor:"pointer", fontFamily:"inherit"}}>
                 {filhos.map((f,i) => <option key={f.id} value={i}>{f.nome}</option>)}
               </select>
