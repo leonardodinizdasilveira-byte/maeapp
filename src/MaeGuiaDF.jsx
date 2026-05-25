@@ -247,7 +247,8 @@ function clearStore() {
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   // Se tem dados do perfil (mae e filhos), já completou onboarding
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!(dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0));
+  const perfilCompleto = dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0;
+  const [isLoggedIn, setIsLoggedIn] = useState(() => perfilCompleto);
   const [mae, setMae] = useState(() => dadosPerfil?.mae || { nome:"", email:user?.email || "", celular:"", regiao:"" });
   const [filhos, setFilhos] = useState(() => dadosPerfil?.filhos || []);
   const [filhoSelecionado, setFilhoSelecionado] = useState(0);
@@ -297,6 +298,20 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [canalCadastrado, setCanalCadastrado] = useState(false);
 
   const filho = filhos[filhoSelecionado] || null;
+
+  // Sincronizar com dadosPerfil quando ele mudar (carregamento async)
+  useEffect(() => {
+    if (dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0) {
+      setMae(dadosPerfil.mae);
+      setFilhos(dadosPerfil.filhos);
+      setIsLoggedIn(true);
+    } else if (dadosPerfil === null) {
+      // Se dadosPerfil é null, ainda está carregando - não fazer nada
+    } else {
+      // Se dadosPerfil existe mas não tem mae/filhos, precisa fazer onboarding
+      setIsLoggedIn(false);
+    }
+  }, [dadosPerfil]);
 
   // Salvar no Firebase quando dados mudarem
   useEffect(() => {
@@ -463,10 +478,10 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     setFilhos(prev => [...prev, { ...novoFilho, id: Date.now() }]);
     setNovoFilho({ nome:"", idade:"", diagnosticos:[] });
   }
-  function finalizarOnboarding() {
+  async function finalizarOnboarding() {
     if (filhos.length === 0) { adicionarFilhoOnb(); return; }
     // Salvar dados no Firebase antes de finalizar
-    onSalvarPerfil({ mae, filhos });
+    await onSalvarPerfil({ mae, filhos });
     setIsLoggedIn(true);
   }
   function toggleDiag(d) {
