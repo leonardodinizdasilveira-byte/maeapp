@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Heart, Home, Calendar, FileText, Folder, Users, BookOpen,
   Bell, LogOut, Plus, Trash2, Copy, Check, Upload, Camera,
-  Download, Eye, ChevronDown, ChevronRight, ChevronUp,
+  Download, Eye, ChevronDown, ChevronRight, ChevronUp, ChevronLeft,
   AlertTriangle, Phone, Pill, X, Menu, Save, Send,
   Shield, Star, Clock, MapPin, Activity, Baby, Volume2, VolumeX, User, Mail
 } from "lucide-react";
@@ -244,8 +244,8 @@ function clearStore() {
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
-  // Carregar dados do Firebase ou usar vazios
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Sempre true pois auth já foi feita
+  // Se tem dados do perfil (mae e filhos), já completou onboarding
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!(dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0));
   const [mae, setMae] = useState(() => dadosPerfil?.mae || { nome:"", email:user?.email || "", celular:"", regiao:"" });
   const [filhos, setFilhos] = useState(() => dadosPerfil?.filhos || []);
   const [filhoSelecionado, setFilhoSelecionado] = useState(0);
@@ -266,6 +266,10 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [alarmeMsg, setAlarmeMsg] = useState("");
   const audioCtxRef = useRef(null);
   const alarmeIntervalRef = useRef(null);
+
+  // Esteira de Evolução
+  const [atividades, setAtividades] = useState([]);
+  const [novaAtividade, setNovaAtividade] = useState({ nome:"", profissional:"", horario:"", instrucoes:"" });
 
   // Gerador
   const [reqSelecionado, setReqSelecionado] = useState(null);
@@ -299,6 +303,40 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     }
   }, [mae, filhos]);
 
+  // Sistema de verificação automática de alertas
+  useEffect(() => {
+    const verificarAlertas = () => {
+      const agora = new Date();
+      const horaAtual = `${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
+      const diaAtual = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][agora.getDay()];
+      
+      // Verificar medicamentos
+      remedios.forEach(r => {
+        if (!r.ministrado && r.horario === horaAtual && r.dias.includes(diaAtual)) {
+          tocarAlarme(`⏰ HORA DO REMÉDIO!\n\n${r.nome}\n${r.dosagem}\n\nNão esqueça de ministrar agora!`);
+        }
+      });
+      
+      // Verificar exames (alertar 24h antes)
+      exames.forEach(e => {
+        const dataExame = new Date(e.data + 'T' + e.hora);
+        const diff = dataExame - agora;
+        const horas24 = 24 * 60 * 60 * 1000;
+        
+        // Se falta exatamente 24h (com margem de 1 minuto)
+        if (diff > horas24 - 60000 && diff < horas24 + 60000) {
+          tocarAlarme(`📅 LEMBRETE DE EXAME!\n\n${e.titulo}\nLocal: ${e.local}\nAmanhã às ${e.hora}\n\n${e.notas || ''}`);
+        }
+      });
+    };
+    
+    // Verificar a cada minuto
+    const intervalo = setInterval(verificarAlertas, 60000);
+    verificarAlertas(); // Verificar imediatamente
+    
+    return () => clearInterval(intervalo);
+  }, [remedios, exames]);
+
   function fazerLogout() {
     auth.signOut(); // Logout do Firebase
   }
@@ -319,24 +357,41 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     }
     const ctx = audioCtxRef.current;
     function beep() {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 880;
-      osc.type = "sine";
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.4);
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880; // Tom alto
+        osc.type = "square"; // Som mais forte
+        gain.gain.setValueAtTime(0.5, ctx.currentTime); // Volume mais alto
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.5);
+      } catch(e) {
+        console.error('Erro no alarme:', e);
+      }
     }
     beep();
-    alarmeIntervalRef.current = setInterval(beep, 600);
+    alarmeIntervalRef.current = setInterval(beep, 800); // Toca a cada 800ms
+    
+    // Vibração no celular (se disponível)
+    if ('vibrate' in navigator) {
+      const vibratePattern = [200, 100, 200, 100, 200];
+      const vibrateInterval = setInterval(() => {
+        navigator.vibrate(vibratePattern);
+      }, 1000);
+      alarmeIntervalRef.vibrateInterval = vibrateInterval;
+    }
   }
 
   function pararAlarme() {
     setAlarmeAtivo(false);
     clearInterval(alarmeIntervalRef.current);
+    if (alarmeIntervalRef.vibrateInterval) {
+      clearInterval(alarmeIntervalRef.vibrateInterval);
+      navigator.vibrate(0); // Para vibração
+    }
   }
 
   // ─── ONBOARDING ─────────────────────────────────────────────────────────────
@@ -359,6 +414,8 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   }
   function finalizarOnboarding() {
     if (filhos.length === 0) { adicionarFilhoOnb(); return; }
+    // Salvar dados no Firebase antes de finalizar
+    onSalvarPerfil({ mae, filhos });
     setIsLoggedIn(true);
   }
   function toggleDiag(d) {
@@ -419,6 +476,20 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     if (!filho) return "";
     const c = cuidador[filhoSelecionado] || {};
     const hoje = new Date().toLocaleDateString("pt-BR");
+    
+    // Atividades terapêuticas do dia
+    const atividadesHoje = atividades.filter(a => !a.concluida);
+    let msgAtividades = "";
+    if (atividadesHoje.length > 0) {
+      msgAtividades = "\n🎯 *ESTEIRA DE EVOLUÇÃO (Atividades Terapêuticas):*\n";
+      atividadesHoje.forEach((ativ, idx) => {
+        msgAtividades += `\n${idx+1}. *${ativ.nome}*\n`;
+        msgAtividades += `   👨‍⚕️ Orientação: ${ativ.profissional}\n`;
+        if (ativ.horario) msgAtividades += `   ⏰ Horário: ${ativ.horario}\n`;
+        if (ativ.instrucoes) msgAtividades += `   📋 Como fazer: ${ativ.instrucoes}\n`;
+      });
+    }
+    
     return `🌿 *GUIA DO CUIDADOR — ${filho.nome.toUpperCase()}*
 📅 Data: ${hoje}
 
@@ -427,7 +498,7 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
 
 💊 *MEDICAMENTOS DO DIA:*
 ${c.remedios || "— Nenhum cadastrado"}
-
+${msgAtividades}
 🥗 *ALIMENTAÇÃO:*
 ✅ Pode: ${c.podeAlimentar || "—"}
 ❌ Não pode: ${c.naoPodeAlimentar || "—"}
@@ -639,7 +710,7 @@ _Enviado via MãeGuia DF_ 💜`;
       {/* MAIN */}
       <main className="main-content" style={{flex:1, padding:"28px 24px", overflowY:"auto", paddingBottom:80}}>
         {tela === "dashboard" && <TelaDashboard mae={mae} filho={filho} filhos={filhos} filhoSelecionado={filhoSelecionado} setFilhoSelecionado={setFilhoSelecionado} remedios={remedios} exames={exames} canalCadastrado={canalCadastrado} setCanalCadastrado={setCanalCadastrado} setTela={setTela} fazerLogout={fazerLogout} />}
-        {tela === "agenda" && <TelaAgenda remedios={remedios} setRemedios={setRemedios} exames={exames} setExames={setExames} novoRemedio={novoRemedio} setNovoRemedio={setNovoRemedio} novoExame={novoExame} setNovoExame={setNovoExame} tocarAlarme={tocarAlarme} filho={filho} />}
+        {tela === "agenda" && <TelaAgenda remedios={remedios} setRemedios={setRemedios} exames={exames} setExames={setExames} novoRemedio={novoRemedio} setNovoRemedio={setNovoRemedio} novoExame={novoExame} setNovoExame={setNovoExame} tocarAlarme={tocarAlarme} filho={filho} atividades={atividades} setAtividades={setAtividades} novaAtividade={novaAtividade} setNovaAtividade={setNovaAtividade} />}
         {tela === "requerimentos" && <TelaRequerimentos mae={mae} filho={filho} filhos={filhos} filhoSelecionado={filhoSelecionado} setFilhoSelecionado={setFilhoSelecionado} reqSelecionado={reqSelecionado} setReqSelecionado={setReqSelecionado} textoCopied={textoCopied} setTextoCopied={setTextoCopied} docSalvo={docSalvo} salvarRequerimento={salvarRequerimento} gerarTexto={gerarTextoRequerimento} />}
         {tela === "documentos" && <TelaDocumentos filho={filho} filhoSelecionado={filhoSelecionado} getDocFilho={getDocFilho} setDocFilho={setDocFilho} gaveta={gaveta} setGaveta={setGaveta} uploadProgress={uploadProgress} cameraInputRef={cameraInputRef} galeriaInputRef={galeriaInputRef} handleUpload={handleUpload} />}
         {tela === "cuidador" && <TelaCuidador filho={filho} filhoSelecionado={filhoSelecionado} cuidador={cuidador} setCuidador={setCuidador} mae={mae} gerarMsg={gerarMsgCuidador} enviarWhatsApp={enviarWhatsApp} msgCopiada={msgCopiada} setMsgCopiada={setMsgCopiada} />}
@@ -986,9 +1057,85 @@ function TelaDashboard({mae,filho,filhos,filhoSelecionado,setFilhoSelecionado,re
   );
 }
 
+// ─── CALENDÁRIO MENSAL ────────────────────────────────────────────────────────
+function CalendarioMensal({remedios, exames}) {
+  const [mesAtual, setMesAtual] = useState(new Date());
+  
+  const primeiroDia = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), 1);
+  const ultimoDia = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0);
+  const diasNoMes = ultimoDia.getDate();
+  const diaSemanaInicio = primeiroDia.getDay();
+  
+  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  
+  function mesAnterior() {
+    setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth() - 1));
+  }
+  
+  function proximoMes() {
+    setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1));
+  }
+  
+  function temEventoNoDia(dia) {
+    const dataStr = `${mesAtual.getFullYear()}-${String(mesAtual.getMonth()+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const diaSemana = diasSemana[new Date(dataStr).getDay()];
+    const temRemedio = remedios.some(r => r.dias.includes(diaSemana));
+    const temExame = exames.some(e => e.data === dataStr);
+    return { temRemedio, temExame };
+  }
+  
+  const dias = [];
+  for (let i = 0; i < diaSemanaInicio; i++) {
+    dias.push(<div key={`empty-${i}`} style={{padding:8}}/>);
+  }
+  
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    const eventos = temEventoNoDia(dia);
+    const hoje = new Date();
+    const ehHoje = dia === hoje.getDate() && mesAtual.getMonth() === hoje.getMonth() && mesAtual.getFullYear() === hoje.getFullYear();
+    
+    dias.push(
+      <div key={dia} style={{padding:"8px 4px",textAlign:"center",borderRadius:8,background: ehHoje ? "#e8f5f0" : eventos.temExame ? "#f0eaf8" : eventos.temRemedio ? "#fff8f0" : "transparent",border: ehHoje ? "2px solid #3d9b7a" : "1px solid #f0f0f0",position:"relative"}}>
+        <div style={{fontSize:13, fontWeight: ehHoje ? 700 : 600, color: ehHoje ? "#3d9b7a" : "#333"}}>{dia}</div>
+        {eventos.temRemedio && <div style={{fontSize:8, marginTop:2}}>💊</div>}
+        {eventos.temExame && <div style={{fontSize:8, marginTop:2}}>📅</div>}
+      </div>
+    );
+  }
+  
+  return (
+    <div className="card" style={{marginBottom:20}}>
+      <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16}}>
+        <button onClick={mesAnterior} className="btn-outline" style={{padding:"6px 12px"}}><ChevronLeft size={16}/></button>
+        <h3 style={{fontSize:15, fontWeight:800, margin:0}}>{meses[mesAtual.getMonth()]} {mesAtual.getFullYear()}</h3>
+        <button onClick={proximoMes} className="btn-outline" style={{padding:"6px 12px"}}><ChevronRight size={16}/></button>
+      </div>
+      <div style={{display:"grid", gridTemplateColumns:"repeat(7, 1fr)", gap:4, marginBottom:8}}>
+        {diasSemana.map(d => <div key={d} style={{textAlign:"center", fontSize:11, fontWeight:700, color:"#666", padding:4}}>{d}</div>)}
+      </div>
+      <div style={{display:"grid", gridTemplateColumns:"repeat(7, 1fr)", gap:4}}>{dias}</div>
+      <div style={{display:"flex", gap:16, marginTop:16, fontSize:12, flexWrap:"wrap"}}>
+        <div style={{display:"flex", alignItems:"center", gap:6}}><div style={{width:20, height:20, background:"#e8f5f0", border:"2px solid #3d9b7a", borderRadius:4}}/><span>Hoje</span></div>
+        <div style={{display:"flex", alignItems:"center", gap:6}}><div style={{width:20, height:20, background:"#fff8f0", border:"1px solid #f0f0f0", borderRadius:4, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10}}>💊</div><span>Medicamentos</span></div>
+        <div style={{display:"flex", alignItems:"center", gap:6}}><div style={{width:20, height:20, background:"#f0eaf8", border:"1px solid #f0f0f0", borderRadius:4, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10}}>📅</div><span>Exames</span></div>
+      </div>
+    </div>
+  );
+}
+
 // ─── AGENDA ───────────────────────────────────────────────────────────────────
-function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRemedio,novoExame,setNovoExame,tocarAlarme,filho}) {
+function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRemedio,novoExame,setNovoExame,tocarAlarme,filho,atividades,setAtividades,novaAtividade,setNovaAtividade}) {
   const DIAS = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
+  
+  const PROFISSIONAIS = [
+    {nome:"Nutricionista", cor:"#3d9b7a", corClara:"#e8f5f0"},
+    {nome:"Psicólogo", cor:"#7c5cbf", corClara:"#f0eaf8"},
+    {nome:"Fonoaudiólogo", cor:"#e07b39", corClara:"#fff3e6"},
+    {nome:"Terapeuta Ocupacional", cor:"#2596be", corClara:"#e6f4f9"},
+    {nome:"Médico", cor:"#c0392b", corClara:"#fef0f0"},
+    {nome:"Professor/Escola", cor:"#27ae60", corClara:"#e8f6ee"}
+  ];
   function toggleDia(d) { setNovoRemedio(p=>({...p, dias: p.dias.includes(d) ? p.dias.filter(x=>x!==d) : [...p.dias,d]})); }
   function addRemedio() {
     if (!novoRemedio.nome || !novoRemedio.horario) return;
@@ -1001,11 +1148,27 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
     setNovoExame({titulo:"",local:"",data:"",hora:"",notas:""});
   }
   function marcarMinistrado(id) { setRemedios(p=>p.map(r=>r.id===id ? {...r,ministrado:true}:r)); }
+  
+  // Atividades Terapêuticas
+  function addAtividade() {
+    if (!novaAtividade.nome || !novaAtividade.profissional) return;
+    setAtividades(p=>[...p, {...novaAtividade, id:Date.now(), concluida:false, dataRegistro:new Date().toISOString()}]);
+    setNovaAtividade({nome:"",profissional:"",horario:"",instrucoes:""});
+  }
+  function toggleAtividade(id) {
+    setAtividades(p=>p.map(a=>a.id===id ? {...a,concluida:!a.concluida}:a));
+  }
+  function getProfissional(nome) {
+    return PROFISSIONAIS.find(p=>p.nome===nome) || PROFISSIONAIS[0];
+  }
 
   return (
     <div>
       <h1 style={{fontWeight:800,fontSize:13,color:"#222",marginBottom:4}}>Agenda de Saúde</h1>
       <p style={{color:"#1a1a1a",fontSize:15,marginBottom:24}}>{filho ? `Para: ${filho.nome}` : "Configure seus filhos no dashboard"}</p>
+
+      {/* CALENDÁRIO */}
+      <CalendarioMensal remedios={remedios} exames={exames} />
 
       {/* MEDICAMENTOS */}
       <div className="card" style={{marginBottom:24}}>
@@ -1056,6 +1219,129 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
             </div>
           ))
         }
+      </div>
+
+      {/* ESTEIRA DE EVOLUÇÃO */}
+      <div className="card" style={{marginBottom:24, background:"linear-gradient(135deg, #fafcfb 0%, #f8f5fc 100%)", border:"2px solid #e8f0ea"}}>
+        <div style={{marginBottom:20}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+            <div style={{width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,#3d9b7a,#7c5cbf)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <Activity size={22} color="white"/>
+            </div>
+            <div>
+              <h2 style={{fontWeight:800,fontSize:16,margin:0,color:"#222"}}>Esteira de Evolução</h2>
+              <p style={{fontSize:13,color:"#666",margin:0}}>Atividades Continuadas • Roteiro Terapêutico</p>
+            </div>
+          </div>
+          
+          {/* Barra de Progresso Diário */}
+          {atividades.length > 0 && (
+            <div style={{background:"white",borderRadius:12,padding:"12px 16px",border:"1.5px solid #e0ede6",marginTop:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <span style={{fontSize:13,fontWeight:700,color:"#3d9b7a"}}>Score de Evolução Diária</span>
+                <span style={{fontSize:15,fontWeight:800,color:"#3d9b7a"}}>
+                  {atividades.filter(a=>a.concluida).length} de {atividades.length} • {Math.round((atividades.filter(a=>a.concluida).length/atividades.length)*100)}%
+                </span>
+              </div>
+              <div style={{height:12,background:"#e8f5f0",borderRadius:8,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${(atividades.filter(a=>a.concluida).length/atividades.length)*100}%`,background:"linear-gradient(90deg,#3d9b7a,#7c5cbf)",borderRadius:8,transition:"width 0.3s"}}/>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Formulário de Nova Atividade */}
+        <div style={{background:"white",borderRadius:16,padding:18,marginBottom:20,border:"1.5px solid #e8f0ea"}}>
+          <p style={{fontWeight:700,fontSize:14,color:"#7c5cbf",marginBottom:14,display:"flex",alignItems:"center",gap:6}}>
+            <Plus size={18}/> Nova Atividade Terapêutica
+          </p>
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            <CampoInput icon={<Star size={19}/>} label="NOME DA ATIVIDADE">
+              <input style={inputBare} placeholder="Ex: Treino de Escovação Autônoma" value={novaAtividade.nome} onChange={e=>setNovaAtividade(p=>({...p,nome:e.target.value}))}/>
+            </CampoInput>
+            
+            <div>
+              <label style={{fontSize:13,fontWeight:700,color:"#333",display:"block",marginBottom:6}}>PROFISSIONAL ORIENTADOR</label>
+              <select value={novaAtividade.profissional} onChange={e=>setNovaAtividade(p=>({...p,profissional:e.target.value}))} className="select-field">
+                <option value="">Selecione o profissional...</option>
+                {PROFISSIONAIS.map(prof=>(
+                  <option key={prof.nome} value={prof.nome}>{prof.nome}</option>
+                ))}
+              </select>
+            </div>
+            
+            <CampoInput icon={<Clock size={19}/>} label="PERÍODO / HORÁRIO PREVISTO">
+              <input style={inputBare} placeholder="Ex: Logo após acordar, 14:00, Antes de dormir" value={novaAtividade.horario} onChange={e=>setNovaAtividade(p=>({...p,horario:e.target.value}))}/>
+            </CampoInput>
+            
+            <CampoTextarea icon={<FileText size={19}/>} label="INSTRUÇÕES PRÁTICAS / PASSO A PASSO" cor="#7c5cbf" rows={5} value={novaAtividade.instrucoes} onChange={e=>setNovaAtividade(p=>({...p,instrucoes:e.target.value}))} placeholder="Descreva detalhadamente a orientação do profissional. Ex: 'Usar a escova macia, fazer movimentos circulares por 2 minutos e elogiar cada etapa concluída.'"/>
+            
+            <button onClick={addAtividade} style={{width:"100%",padding:"15px",fontSize:15,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"white",border:"none",borderRadius:16,cursor:"pointer",fontFamily:"inherit",background:"linear-gradient(135deg,#7c5cbf,#9b7dd4)",boxShadow:"0 5px 14px rgba(124,92,191,0.28)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              <Plus size={17}/> Adicionar à Esteira de Evolução
+            </button>
+          </div>
+        </div>
+        
+        {/* Timeline de Atividades */}
+        {atividades.length === 0 ? (
+          <div style={{textAlign:"center",padding:"32px 0",color:"#999"}}>
+            <Activity size={48} strokeWidth={1}/>
+            <p style={{marginTop:12,fontSize:14}}>Nenhuma atividade cadastrada ainda.</p>
+            <p style={{fontSize:13,color:"#666"}}>Adicione as orientações dos profissionais acima.</p>
+          </div>
+        ) : (
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {atividades.map((ativ,idx)=>{
+              const prof = getProfissional(ativ.profissional);
+              return (
+                <div key={ativ.id} style={{background:ativ.concluida?"#e8f6ee":"white",borderRadius:16,padding:"16px 18px",border:`2px solid ${ativ.concluida?"#27ae60":prof.cor}`,position:"relative",transition:"all 0.3s"}}>
+                  <div style={{position:"absolute",top:12,right:12,background:prof.corClara,color:prof.cor,fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:8,border:`1px solid ${prof.cor}`}}>
+                    {ativ.profissional}
+                  </div>
+                  
+                  <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                    <button onClick={()=>toggleAtividade(ativ.id)} style={{width:50,height:50,borderRadius:12,border:`3px solid ${ativ.concluida?"#27ae60":prof.cor}`,background:ativ.concluida?"#27ae60":"white",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,transition:"all 0.2s",transform:ativ.concluida?"scale(1.05)":"scale(1)"}}>
+                      {ativ.concluida && <Check size={30} color="white" strokeWidth={3}/>}
+                    </button>
+                    
+                    <div style={{flex:1,paddingRight:60}}>
+                      <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 4px",color:ativ.concluida?"#27ae60":"#222",textDecoration:ativ.concluida?"line-through":"none"}}>
+                        {ativ.nome}
+                      </h3>
+                      {ativ.horario && (
+                        <p style={{fontSize:13,color:"#666",margin:"0 0 8px",display:"flex",alignItems:"center",gap:6}}>
+                          <Clock size={14}/> {ativ.horario}
+                        </p>
+                      )}
+                      {ativ.instrucoes && (
+                        <div style={{background:ativ.concluida?"#f0f9f3":"#f8f9fa",borderRadius:10,padding:"10px 12px",marginTop:8,border:"1px solid #e5e7eb"}}>
+                          <p style={{fontSize:13,fontWeight:600,color:"#555",marginBottom:4}}>📋 Passo a Passo:</p>
+                          <p style={{fontSize:13,color:"#333",margin:0,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{ativ.instrucoes}</p>
+                        </div>
+                      )}
+                      
+                      {ativ.concluida && (
+                        <div style={{marginTop:10,background:"#e8f6ee",border:"1.5px solid #27ae60",borderRadius:10,padding:"8px 12px"}}>
+                          <p style={{fontSize:13,fontWeight:700,color:"#27ae60",margin:0,display:"flex",alignItems:"center",gap:6}}>
+                            <Check size={16}/> Evolução Concluída! Orientação Executada.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <button onClick={()=>setAtividades(p=>p.filter(a=>a.id!==ativ.id))} style={{position:"absolute",top:50,right:12,background:"#fce4e4",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"#c0392b"}}>
+                      <Trash2 size={14}/>
+                    </button>
+                  </div>
+                  
+                  <div style={{position:"absolute",bottom:12,right:12,width:28,height:28,borderRadius:"50%",background:prof.cor,color:"white",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700}}>
+                    {idx+1}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* EXAMES */}
