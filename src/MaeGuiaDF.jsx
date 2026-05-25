@@ -247,6 +247,9 @@ function clearStore() {
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
+  // Debug
+  console.log("MaeGuiaDF renderizou com dadosPerfil:", dadosPerfil);
+  
   // Se tem dados do perfil (mae e filhos), já completou onboarding
   const perfilCompleto = dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0;
   const [isLoggedIn, setIsLoggedIn] = useState(() => perfilCompleto);
@@ -296,16 +299,16 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [checklistFeito, setChecklistFeito] = useState({});
   
   // Diário de Comportamento
-  const [registros, setRegistros] = useState([]);
+  const [registros, setRegistros] = useState(dadosPerfil?.registros || []);
   const [novoRegistro, setNovoRegistro] = useState({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
   
   // Financeiro
-  const [gastos, setGastos] = useState([]);
+  const [gastos, setGastos] = useState(dadosPerfil?.gastos || []);
   const [novoGasto, setNovoGasto] = useState({ categoria:"", valor:"", data:"", descricao:"" });
-  const [orcamento, setOrcamento] = useState({ medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
+  const [orcamento, setOrcamento] = useState(dadosPerfil?.orcamento || { medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
   
   // Contatos
-  const [contatos, setContatos] = useState([]);
+  const [contatos, setContatos] = useState(dadosPerfil?.contatos || []);
   const [novoContato, setNovoContato] = useState({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
 
   // GDF Alerta
@@ -330,9 +333,11 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   // Salvar no Firebase quando dados mudarem
   useEffect(() => {
     if (mae.nome || mae.celular || mae.regiao) {
-      onSalvarPerfil({ mae, filhos });
+      const dadosParaSalvar = { mae, filhos, registros, gastos, orcamento, contatos };
+      console.log("Salvando no Firebase:", dadosParaSalvar);
+      onSalvarPerfil(dadosParaSalvar);
     }
-  }, [mae, filhos]);
+  }, [mae, filhos, registros, gastos, orcamento, contatos]);
 
   // Sistema de verificação automática de alertas
   useEffect(() => {
