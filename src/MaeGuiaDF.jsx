@@ -327,8 +327,21 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     }
   }, [dadosPerfil]);
 
+  // Flag para não salvar na primeira carga
+  const primeiraCarregaRef = useRef(true);
+
+  // Quando dadosPerfil carrega, marcar que já carregou
+  useEffect(() => {
+    if (dadosPerfil?.mae?.nome) {
+      primeiraCarregaRef.current = false;
+    }
+  }, [dadosPerfil?.mae?.nome]);
+
   // Salvar no Firebase com debounce (aguarda 1 segundo após última mudança)
   useEffect(() => {
+    // NÃO SALVAR na primeira carga!
+    if (primeiraCarregaRef.current) return;
+    
     const timer = setTimeout(() => {
       if (mae.nome || mae.celular || mae.regiao) {
         console.log("Salvando com debounce...");
