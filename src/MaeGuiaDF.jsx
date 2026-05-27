@@ -328,30 +328,6 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   }, [dadosPerfil]);
 
   // Flag para não salvar na primeira carga
-  const primeiraCarregaRef = useRef(true);
-
-  // Quando dadosPerfil carrega, marcar que já carregou
-  useEffect(() => {
-    if (dadosPerfil?.mae?.nome) {
-      primeiraCarregaRef.current = false;
-    }
-  }, [dadosPerfil?.mae?.nome]);
-
-  // Salvar no Firebase com debounce (aguarda 1 segundo após última mudança)
-  useEffect(() => {
-    // NÃO SALVAR na primeira carga!
-    if (primeiraCarregaRef.current) return;
-    
-    const timer = setTimeout(() => {
-      if (mae.nome || mae.celular || mae.regiao) {
-        console.log("Salvando com debounce...");
-        onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos });
-      }
-    }, 1000); // Aguarda 1 segundo
-    
-    return () => clearTimeout(timer); // Limpar timer anterior
-  }, [mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos]);
-
   // Sistema de verificação automática de alertas
   useEffect(() => {
     const verificarAlertas = () => {
@@ -1250,13 +1226,19 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
   function toggleDia(d) { setNovoRemedio(p=>({...p, dias: p.dias.includes(d) ? p.dias.filter(x=>x!==d) : [...p.dias,d]})); }
   function addRemedio() {
     if (!novoRemedio.nome || !novoRemedio.horario) return;
-    setRemedios(p=>[...p, {...novoRemedio, id:Date.now(), ministrado:false}]);
+    const novoArray = [...remedios, {...novoRemedio, id:Date.now(), ministrado:false}];
+    setRemedios(novoArray);
     setNovoRemedio({nome:"",dosagem:"",dias:[],horario:""});
+    // SALVAR IMEDIATAMENTE
+    onSalvarPerfil({ mae, filhos, remedios: novoArray, exames, atividades, registros, gastos, orcamento, contatos });
   }
   function addExame() {
     if (!novoExame.titulo || !novoExame.data) return;
-    setExames(p=>[...p, {...novoExame, id:Date.now()}]);
+    const novoArray = [...exames, {...novoExame, id:Date.now()}];
+    setExames(novoArray);
     setNovoExame({titulo:"",local:"",data:"",hora:"",notas:"",horasAntesPreparacao:1});
+    // SALVAR IMEDIATAMENTE
+    onSalvarPerfil({ mae, filhos, remedios, exames: novoArray, atividades, registros, gastos, orcamento, contatos });
   }
   function marcarMinistrado(id) { setRemedios(p=>p.map(r=>r.id===id ? {...r,ministrado:true}:r)); }
   
@@ -1990,8 +1972,10 @@ function TelaDiario({registros, setRegistros, novoRegistro, setNovoRegistro, fil
   
   function adicionarRegistro() {
     if (!novoRegistro.tipo || !novoRegistro.data) return;
-    setRegistros(prev => [...prev, {...novoRegistro, id:Date.now(), filho:filho?.nome}]);
+    const novoArray = [...registros, {...novoRegistro, id:Date.now(), filho:filho?.nome}];
+    setRegistros(novoArray);
     setNovoRegistro({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
+    onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros: novoArray, gastos, orcamento, contatos });
   }
   
   // Estatísticas
@@ -2127,8 +2111,10 @@ function TelaFinanceiro({gastos, setGastos, novoGasto, setNovoGasto, orcamento, 
   
   function adicionarGasto() {
     if (!novoGasto.categoria || !novoGasto.valor || !novoGasto.data) return;
-    setGastos(prev => [...prev, {...novoGasto, id:Date.now(), filho:filho?.nome}]);
+    const novoArray = [...gastos, {...novoGasto, id:Date.now(), filho:filho?.nome}];
+    setGastos(novoArray);
     setNovoGasto({ categoria:"", valor:"", data:"", descricao:"" });
+    onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros, gastos: novoArray, orcamento, contatos });
   }
   
   // Estatísticas
@@ -2313,8 +2299,10 @@ function TelaContatos({contatos, setContatos, novoContato, setNovoContato}) {
   
   function adicionarContato() {
     if (!novoContato.nome || !novoContato.categoria || !novoContato.telefone) return;
-    setContatos(prev => [...prev, {...novoContato, id:Date.now()}]);
+    const novoArray = [...contatos, {...novoContato, id:Date.now()}];
+    setContatos(novoArray);
     setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
+    onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos: novoArray });
   }
   
   const contatosPorCategoria = CATEGORIAS.map(c => ({
