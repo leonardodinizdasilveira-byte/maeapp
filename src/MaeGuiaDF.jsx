@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Heart, Home, Calendar, FileText, Folder, Users, BookOpen,
   Bell, LogOut, Plus, Trash2, Copy, Check, Upload, Camera,
@@ -247,9 +247,6 @@ function clearStore() {
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil, onLogout }) {
-  // DEBUG: Verificar se as props estão sendo recebidas
-  console.log("🔍 MaeGuiaDF recebeu props:", { user: user?.email, onSalvarPerfil: !!onSalvarPerfil, onLogout: !!onLogout });
-  
   // Se tem dados do perfil (mae e filhos), já completou onboarding
   const perfilCompleto = dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0;
   const [isLoggedIn, setIsLoggedIn] = useState(() => perfilCompleto);
@@ -379,11 +376,7 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil, onLogout 
   }, [remedios, exames]);
 
   function fazerLogout() {
-    if (onLogout) {
-      onLogout(); // Usar a função do App.jsx
-    } else {
-      auth.signOut(); // Fallback
-    }
+    auth.signOut(); // Logout do Firebase
   }
   
   async function sairEDeletarConta() {
@@ -399,17 +392,15 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil, onLogout 
     try {
       const user = auth.currentUser;
       if (user) {
+        // Não deletar documentos - só fazer logout!
+        // Os dados devem permanecer no Firebase
+        
         // Deletar conta do Firebase Auth
         await deleteUser(user);
       }
     } catch (error) {
       console.error("Erro ao deletar conta:", error);
-    }
-    
-    // Fazer logout usando a função do App.jsx
-    if (onLogout) {
-      onLogout();
-    } else {
+      // Mesmo se der erro, faz logout
       auth.signOut();
     }
   }
@@ -1235,19 +1226,13 @@ function TelaAgenda({remedios,setRemedios,exames,setExames,novoRemedio,setNovoRe
   function toggleDia(d) { setNovoRemedio(p=>({...p, dias: p.dias.includes(d) ? p.dias.filter(x=>x!==d) : [...p.dias,d]})); }
   function addRemedio() {
     if (!novoRemedio.nome || !novoRemedio.horario) return;
-    const novoArray = [...remedios, {...novoRemedio, id:Date.now(), ministrado:false}];
-    setRemedios(novoArray);
+    setRemedios(p=>[...p, {...novoRemedio, id:Date.now(), ministrado:false}]);
     setNovoRemedio({nome:"",dosagem:"",dias:[],horario:""});
-    // SALVAR IMEDIATAMENTE
-    onSalvarPerfil({ mae, filhos, remedios: novoArray, exames, atividades, registros, gastos, orcamento, contatos });
   }
   function addExame() {
     if (!novoExame.titulo || !novoExame.data) return;
-    const novoArray = [...exames, {...novoExame, id:Date.now()}];
-    setExames(novoArray);
+    setExames(p=>[...p, {...novoExame, id:Date.now()}]);
     setNovoExame({titulo:"",local:"",data:"",hora:"",notas:"",horasAntesPreparacao:1});
-    // SALVAR IMEDIATAMENTE
-    onSalvarPerfil({ mae, filhos, remedios, exames: novoArray, atividades, registros, gastos, orcamento, contatos });
   }
   function marcarMinistrado(id) { setRemedios(p=>p.map(r=>r.id===id ? {...r,ministrado:true}:r)); }
   
@@ -1981,10 +1966,8 @@ function TelaDiario({registros, setRegistros, novoRegistro, setNovoRegistro, fil
   
   function adicionarRegistro() {
     if (!novoRegistro.tipo || !novoRegistro.data) return;
-    const novoArray = [...registros, {...novoRegistro, id:Date.now(), filho:filho?.nome}];
-    setRegistros(novoArray);
+    setRegistros(prev => [...prev, {...novoRegistro, id:Date.now(), filho:filho?.nome}]);
     setNovoRegistro({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
-    onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros: novoArray, gastos, orcamento, contatos });
   }
   
   // Estatísticas
@@ -2120,10 +2103,8 @@ function TelaFinanceiro({gastos, setGastos, novoGasto, setNovoGasto, orcamento, 
   
   function adicionarGasto() {
     if (!novoGasto.categoria || !novoGasto.valor || !novoGasto.data) return;
-    const novoArray = [...gastos, {...novoGasto, id:Date.now(), filho:filho?.nome}];
-    setGastos(novoArray);
+    setGastos(prev => [...prev, {...novoGasto, id:Date.now(), filho:filho?.nome}]);
     setNovoGasto({ categoria:"", valor:"", data:"", descricao:"" });
-    onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros, gastos: novoArray, orcamento, contatos });
   }
   
   // Estatísticas
@@ -2308,10 +2289,8 @@ function TelaContatos({contatos, setContatos, novoContato, setNovoContato}) {
   
   function adicionarContato() {
     if (!novoContato.nome || !novoContato.categoria || !novoContato.telefone) return;
-    const novoArray = [...contatos, {...novoContato, id:Date.now()}];
-    setContatos(novoArray);
+    setContatos(prev => [...prev, {...novoContato, id:Date.now()}]);
     setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
-    onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos: novoArray });
   }
   
   const contatosPorCategoria = CATEGORIAS.map(c => ({
