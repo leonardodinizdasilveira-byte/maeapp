@@ -272,7 +272,7 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const alarmeIntervalRef = useRef(null);
 
   // Esteira de Evolução
-  const [atividades, setAtividades] = useState([]);
+  const [atividades, setAtividades] = useState(dadosPerfil?.atividades || []);
   const [novaAtividade, setNovaAtividade] = useState({ nome:"", profissional:"", horario:"", instrucoes:"" });
 
   // Gerador
@@ -296,16 +296,16 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [checklistFeito, setChecklistFeito] = useState({});
   
   // Diário de Comportamento
-  const [registros, setRegistros] = useState([]);
+  const [registros, setRegistros] = useState(dadosPerfil?.registros || []);
   const [novoRegistro, setNovoRegistro] = useState({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
   
   // Financeiro
-  const [gastos, setGastos] = useState([]);
+  const [gastos, setGastos] = useState(dadosPerfil?.gastos || []);
   const [novoGasto, setNovoGasto] = useState({ categoria:"", valor:"", data:"", descricao:"" });
-  const [orcamento, setOrcamento] = useState({ medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
+  const [orcamento, setOrcamento] = useState(dadosPerfil?.orcamento || { medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
   
   // Contatos
-  const [contatos, setContatos] = useState([]);
+  const [contatos, setContatos] = useState(dadosPerfil?.contatos || []);
   const [novoContato, setNovoContato] = useState({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
 
   // GDF Alerta
@@ -327,12 +327,17 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     }
   }, [dadosPerfil]);
 
-  // Salvar no Firebase quando dados mudarem
+  // Salvar no Firebase com debounce (aguarda 1 segundo após última mudança)
   useEffect(() => {
-    if (mae.nome || mae.celular || mae.regiao) {
-      onSalvarPerfil({ mae, filhos, remedios, exames });
-    }
-  }, [mae, filhos, remedios, exames]);
+    const timer = setTimeout(() => {
+      if (mae.nome || mae.celular || mae.regiao) {
+        console.log("Salvando com debounce...");
+        onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos });
+      }
+    }, 1000); // Aguarda 1 segundo
+    
+    return () => clearTimeout(timer); // Limpar timer anterior
+  }, [mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos]);
 
   // Sistema de verificação automática de alertas
   useEffect(() => {
