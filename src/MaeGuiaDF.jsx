@@ -403,18 +403,8 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     try {
       const user = auth.currentUser;
       if (user) {
-        // Deletar documentos do Firestore
-        try {
-          await deleteDoc(doc(db, "usuarios", user.uid));
-        } catch (e) {
-          console.log("Doc usuarios não encontrado");
-        }
-        
-        try {
-          await deleteDoc(doc(db, "perfis", user.uid));
-        } catch (e) {
-          console.log("Doc perfis não encontrado");
-        }
+        // Não deletar documentos - só fazer logout!
+        // Os dados devem permanecer no Firebase
         
         // Deletar conta do Firebase Auth
         await deleteUser(user);
