@@ -4,7 +4,6 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { setDoc } from "firebase/firestore";
 import MaeGuiaDF from "./MaeGuiaDF";
-import "./App.css";
 
 export default function App() {
   const [user, setUser] = useState(null);
