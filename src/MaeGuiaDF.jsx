@@ -376,7 +376,11 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   }, [remedios, exames]);
 
   function fazerLogout() {
-    auth.signOut(); // Logout do Firebase
+    if (onLogout) {
+      onLogout(); // Usar a função do App.jsx
+    } else {
+      auth.signOut(); // Fallback
+    }
   }
   
   async function sairEDeletarConta() {
@@ -392,15 +396,17 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     try {
       const user = auth.currentUser;
       if (user) {
-        // Não deletar documentos - só fazer logout!
-        // Os dados devem permanecer no Firebase
-        
         // Deletar conta do Firebase Auth
         await deleteUser(user);
       }
     } catch (error) {
       console.error("Erro ao deletar conta:", error);
-      // Mesmo se der erro, faz logout
+    }
+    
+    // Fazer logout usando a função do App.jsx
+    if (onLogout) {
+      onLogout();
+    } else {
       auth.signOut();
     }
   }
