@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
-import { setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import MaeGuiaDF from "./MaeGuiaDF";
 
 export default function App() {
@@ -11,75 +10,57 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        const perfilRef = doc(db, "perfis", currentUser.uid);
-        
-        const unsubscribePerfil = onSnapshot(perfilRef, 
-          (snapshot) => {
-            if (snapshot.exists()) {
-              const data = snapshot.data();
-              console.log("✅ Perfil carregado do Firebase:", data);
-              setDadosPerfil(data);
-            } else {
-              console.log("⚠️ Perfil não existe, onboarding necessário");
-              setDadosPerfil({});
-            }
-            setLoading(false);
-          }, 
-          (error) => {
-            console.error("❌ Erro ao ouvir perfil:", error);
+        // Carregar dados uma única vez
+        try {
+          const docSnap = await getDoc(doc(db, "perfis", currentUser.uid));
+          if (docSnap.exists()) {
+            console.log("✅ Perfil carregado:", docSnap.data());
+            setDadosPerfil(docSnap.data());
+          } else {
+            console.log("⚠️ Perfil vazio");
             setDadosPerfil({});
-            setLoading(false);
           }
-        );
-
+        } catch (error) {
+          console.error("❌ Erro ao carregar:", error);
+          setDadosPerfil({});
+        }
         setUser(currentUser);
-        return unsubscribePerfil;
       } else {
-        console.log("👤 Usuário deslogado");
         setUser(null);
         setDadosPerfil(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // ⭐ FUNÇÃO PARA SALVAR NO FIREBASE
   async function salvarPerfil(dados) {
     if (!user) {
-      console.error("❌ Não há usuário logado");
+      console.error("❌ Sem usuário");
       return;
     }
-    
     try {
-      console.log("💾 Salvando perfil no Firebase:", dados);
-      const perfilRef = doc(db, "perfis", user.uid);
-      await setDoc(perfilRef, {
-        ...dados,
-        ultimaAtualizacao: new Date().toISOString()
-      }, { merge: true });
-      
-      console.log("✅ Perfil salvo com sucesso!");
+      console.log("💾 Salvando:", dados);
+      await setDoc(doc(db, "perfis", user.uid), dados, { merge: true });
+      console.log("✅ Salvo!");
     } catch (error) {
-      console.error("❌ Erro ao salvar perfil:", error);
+      console.error("❌ Erro:", error);
     }
   }
 
   async function fazerLogout() {
     try {
       await signOut(auth);
-      setUser(null);
-      setDadosPerfil(null);
     } catch (error) {
-      console.error("Erro ao fazer logout:", error);
+      console.error("Erro logout:", error);
     }
   }
 
   if (loading) {
-    return <div style={{padding: '20px', textAlign: 'center'}}>⏳ Carregando...</div>;
+    return <div style={{padding: '20px'}}>⏳ Carregando...</div>;
   }
 
   return (
