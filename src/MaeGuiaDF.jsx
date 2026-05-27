@@ -246,7 +246,10 @@ function clearStore() {
 }
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
-export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
+export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil, onLogout }) {
+  // DEBUG: Verificar se as props estão sendo recebidas
+  console.log("🔍 MaeGuiaDF recebeu props:", { user: user?.email, onSalvarPerfil: !!onSalvarPerfil, onLogout: !!onLogout });
+  
   // Se tem dados do perfil (mae e filhos), já completou onboarding
   const perfilCompleto = dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0;
   const [isLoggedIn, setIsLoggedIn] = useState(() => perfilCompleto);
