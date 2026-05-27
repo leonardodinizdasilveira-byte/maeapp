@@ -272,7 +272,7 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const alarmeIntervalRef = useRef(null);
 
   // Esteira de Evolução
-  const [atividades, setAtividades] = useState(dadosPerfil?.atividades || []);
+  const [atividades, setAtividades] = useState([]);
   const [novaAtividade, setNovaAtividade] = useState({ nome:"", profissional:"", horario:"", instrucoes:"" });
 
   // Gerador
@@ -281,14 +281,14 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [docSalvo, setDocSalvo] = useState(false);
 
   // Documentos
-  const [documentos, setDocumentos] = useState(dadosPerfil?.documentos || {});
+  const [documentos, setDocumentos] = useState({});
   const [uploadProgress, setUploadProgress] = useState({});
   const cameraInputRef = useRef(null);
   const galeriaInputRef = useRef(null);
   const [gaveta, setGaveta] = useState("Saúde");
 
   // Cuidador
-  const [cuidador, setCuidador] = useState(dadosPerfil?.cuidador || {});
+  const [cuidador, setCuidador] = useState({});
   const [msgCopiada, setMsgCopiada] = useState(false);
 
   // Direitos
@@ -296,16 +296,16 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [checklistFeito, setChecklistFeito] = useState({});
   
   // Diário de Comportamento
-  const [registros, setRegistros] = useState(dadosPerfil?.registros || []);
+  const [registros, setRegistros] = useState([]);
   const [novoRegistro, setNovoRegistro] = useState({ tipo:"", data:"", hora:"", duracao:"", gatilho:"", oQueAjudou:"", notas:"" });
   
   // Financeiro
-  const [gastos, setGastos] = useState(dadosPerfil?.gastos || []);
+  const [gastos, setGastos] = useState([]);
   const [novoGasto, setNovoGasto] = useState({ categoria:"", valor:"", data:"", descricao:"" });
-  const [orcamento, setOrcamento] = useState(dadosPerfil?.orcamento || { medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
+  const [orcamento, setOrcamento] = useState({ medicamentos:0, terapias:0, transporte:0, alimentacao:0, outros:0 });
   
   // Contatos
-  const [contatos, setContatos] = useState(dadosPerfil?.contatos || []);
+  const [contatos, setContatos] = useState([]);
   const [novoContato, setNovoContato] = useState({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
 
   // GDF Alerta
@@ -330,20 +330,9 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   // Salvar no Firebase quando dados mudarem
   useEffect(() => {
     if (mae.nome || mae.celular || mae.regiao) {
-      onSalvarPerfil({ 
-        mae, 
-        filhos, 
-        remedios, 
-        exames, 
-        atividades, 
-        registros, 
-        gastos, 
-        orcamento, 
-        contatos,
-        documentos // Incluindo documentos
-      });
+      onSalvarPerfil({ mae, filhos, remedios, exames });
     }
-  }, [mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos, JSON.stringify(documentos)]);
+  }, [mae, filhos, remedios, exames]);
 
   // Sistema de verificação automática de alertas
   useEffect(() => {
