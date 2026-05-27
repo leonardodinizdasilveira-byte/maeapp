@@ -1,52 +1,50 @@
 import { useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
-import { setDoc } from "firebase/firestore";
+import Auth from "./Auth";
 import MaeGuiaDF from "./MaeGuiaDF";
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [dadosPerfil, setDadosPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dadosPerfil, setDadosPerfil] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    // Observar mudanças no estado de autenticação
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        const perfilRef = doc(db, "perfis", currentUser.uid);
-        
-        const unsubscribePerfil = onSnapshot(perfilRef, 
-          (snapshot) => {
-            if (snapshot.exists()) {
-              const data = snapshot.data();
-              console.log("Perfil carregado em tempo real:", data);
-              setDadosPerfil(data);
-            } else {
-              console.log("Perfil não existe, onboarding necessário");
-              setDadosPerfil({});
-            }
-            setLoading(false);
-          }, 
-          (error) => {
-            console.error("Erro ao ouvir perfil:", error);
-            setDadosPerfil({});
-            setLoading(false);
+        // Usuário logado - buscar dados do perfil
+        try {
+          const perfilRef = doc(db, "perfis", currentUser.uid);
+          const perfilSnap = await getDoc(perfilRef);
+          
+          if (perfilSnap.exists()) {
+            const data = perfilSnap.data();
+            console.log("Perfil carregado:", data); // DEBUG
+            setDadosPerfil(data);
+          } else {
+            console.log("Perfil não existe, onboarding necessário"); // DEBUG
+            setDadosPerfil({}); // Objeto vazio indica "sem perfil ainda"
           }
-        );
-
+        } catch (error) {
+          console.error("Erro ao buscar perfil:", error);
+          setDadosPerfil({}); // Em caso de erro, força onboarding
+        }
         setUser(currentUser);
-        return unsubscribePerfil;
       } else {
-        console.log("Usuário deslogado");
+        // Usuário deslogado
+        console.log("Usuário deslogado"); // DEBUG
         setUser(null);
         setDadosPerfil(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
+  // Salvar dados do perfil no Firebase quando houver mudanças
   async function salvarPerfil(dados) {
     if (!user) {
       console.error("Não há usuário logado");
@@ -54,39 +52,36 @@ export default function App() {
     }
     
     try {
-      console.log("Salvando perfil:", dados);
+      console.log("Salvando perfil:", dados); // DEBUG
       const perfilRef = doc(db, "perfis", user.uid);
       await setDoc(perfilRef, {
         ...dados,
         ultimaAtualizacao: new Date().toISOString()
       }, { merge: true });
       
-      console.log("Perfil salvo com sucesso");
+      console.log("Perfil salvo com sucesso"); // DEBUG
+      setDadosPerfil(dados);
     } catch (error) {
       console.error("Erro ao salvar perfil:", error);
     }
   }
 
-  async function fazerLogout() {
-    try {
-      await signOut(auth);
-      setUser(null);
-      setDadosPerfil(null);
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-    }
-  }
-
   if (loading) {
-    return <div>Carregando...</div>;
+    return (
+      <div style={{minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#f6f8f7"}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{width:64, height:64, background:"linear-gradient(135deg,#3d9b7a,#7c5cbf)", borderRadius:20, display:"inline-flex", alignItems:"center", justifyContent:"center", marginBottom:16, animation:"pulse 1.5s infinite"}}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </div>
+          <p style={{fontSize:16, fontWeight:700, color:"#3d9b7a", fontFamily:"'Nunito', sans-serif"}}>Carregando MãeGuia DF...</p>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <MaeGuiaDF
-      user={user}
-      dadosPerfil={dadosPerfil}
-      onSalvarPerfil={salvarPerfil}
-      onLogout={fazerLogout}
-    />
-  );
+  if (!user) {
+    return <Auth onLogin={setUser} />;
+  }
+
+  return <MaeGuiaDF user={user} dadosPerfil={dadosPerfil} onSalvarPerfil={salvarPerfil} />;
 }
