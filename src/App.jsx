@@ -17,27 +17,31 @@ export default function App() {
         // Usuário logado - usar listener em tempo real
         const perfilRef = doc(db, "perfis", currentUser.uid);
         
-        const unsubscribePerfil = onSnapshot(perfilRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.data();
-            console.log("Perfil carregado em tempo real:", data); // DEBUG
-            setDadosPerfil(data);
-          } else {
-            console.log("Perfil não existe, onboarding necessário"); // DEBUG
-            setDadosPerfil({}); // Objeto vazio indica "sem perfil ainda"
+        const unsubscribePerfil = onSnapshot(perfilRef, 
+          (snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.data();
+              console.log("Perfil carregado em tempo real:", data);
+              setDadosPerfil(data);
+            } else {
+              console.log("Perfil não existe, onboarding necessário");
+              setDadosPerfil({});
+            }
+            setLoading(false);
+          }, 
+          (error) => {
+            console.error("Erro ao ouvir perfil:", error);
+            setDadosPerfil({});
+            setLoading(false);
           }
-        }, (error) => {
-          console.error("Erro ao ouvir perfil:", error);
-          setDadosPerfil({}); // Em caso de erro, força onboarding
-        });
+        );
 
         setUser(currentUser);
-        setLoading(false);
 
-        return unsubscribePerfil; // Cleanup
+        return unsubscribePerfil;
       } else {
         // Usuário deslogado
-        console.log("Usuário deslogado"); // DEBUG
+        console.log("Usuário deslogado");
         setUser(null);
         setDadosPerfil(null);
         setLoading(false);
@@ -55,14 +59,14 @@ export default function App() {
     }
     
     try {
-      console.log("Salvando perfil:", dados); // DEBUG
+      console.log("Salvando perfil:", dados);
       const perfilRef = doc(db, "perfis", user.uid);
       await setDoc(perfilRef, {
         ...dados,
         ultimaAtualizacao: new Date().toISOString()
       }, { merge: true });
       
-      console.log("Perfil salvo com sucesso"); // DEBUG
+      console.log("Perfil salvo com sucesso");
     } catch (error) {
       console.error("Erro ao salvar perfil:", error);
     }
