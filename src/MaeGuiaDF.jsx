@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Heart, Home, Calendar, FileText, Folder, Users, BookOpen,
   Bell, LogOut, Plus, Trash2, Copy, Check, Upload, Camera,
