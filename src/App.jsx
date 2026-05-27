@@ -3,7 +3,7 @@ import { auth, db } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { setDoc } from "firebase/firestore";
-import App_Tela from "./App_Tela";
+import MaeGuiaDF from "./MaeGuiaDF";
 import "./App.css";
 
 export default function App() {
@@ -14,7 +14,6 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        // Usuário logado - usar listener em tempo real
         const perfilRef = doc(db, "perfis", currentUser.uid);
         
         const unsubscribePerfil = onSnapshot(perfilRef, 
@@ -37,10 +36,8 @@ export default function App() {
         );
 
         setUser(currentUser);
-
         return unsubscribePerfil;
       } else {
-        // Usuário deslogado
         console.log("Usuário deslogado");
         setUser(null);
         setDadosPerfil(null);
@@ -51,7 +48,6 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Salvar dados do perfil no Firebase quando houver mudanças
   async function salvarPerfil(dados) {
     if (!user) {
       console.error("Não há usuário logado");
@@ -72,7 +68,6 @@ export default function App() {
     }
   }
 
-  // Fazer logout
   async function fazerLogout() {
     try {
       await signOut(auth);
@@ -88,7 +83,7 @@ export default function App() {
   }
 
   return (
-    <App_Tela
+    <MaeGuiaDF
       user={user}
       dadosPerfil={dadosPerfil}
       onSalvarPerfil={salvarPerfil}
