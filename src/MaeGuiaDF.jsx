@@ -2314,12 +2314,13 @@ function TelaContatos({contatos, setContatos, novoContato, setNovoContato}) {
     {id:"escola", nome:"🏫 Escola/Creche", cor:"#e67e22"}
   ];
   
-  function adicionarContato() {
-    if (!novoContato.nome || !novoContato.categoria || !novoContato.telefone) return;
-    setContatos(prev => [...prev, {...novoContato, id:Date.now()}]);
-    setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
-  }
-  
+    function adicionarContato() {
+  if (!novoContato.nome || !novoContato.categoria || !novoContato.telefone) return;
+  const novoArray = [...contatos, {...novoContato, id:Date.now()}];
+  setContatos(novoArray);
+  setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
+  if (onSalvarPerfil) onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos: novoArray });
+}
   const contatosPorCategoria = CATEGORIAS.map(c => ({
     ...c,
     contatos: contatos.filter(ct => ct.categoria === c.id)
