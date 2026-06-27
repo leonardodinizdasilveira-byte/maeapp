@@ -2327,7 +2327,6 @@ function TelaContatos({contatos, setContatos, novoContato, setNovoContato}) {
   const novoArray = [...contatos, {...novoContato, id:Date.now()}];
   setContatos(novoArray);
   setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
-  if (onSalvarPerfil) onSalvarPerfil({ mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos: novoArray });
 }
   const contatosPorCategoria = CATEGORIAS.map(c => ({
     ...c,
