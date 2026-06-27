@@ -254,6 +254,14 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   const [filhos, setFilhos] = useState(() => dadosPerfil?.filhos || []);
   const [filhoSelecionado, setFilhoSelecionado] = useState(0);
   const [tela, setTela] = useState("dashboard");
+  // Muda de tela quando dados carregam
+  useEffect(() => {
+    if (dadosPerfil?.mae?.nome) {
+      setTela("dashboard");
+    } else if (dadosPerfil !== null && !dadosPerfil?.mae?.nome) {
+      setTela("onboarding");
+    }
+  }, [dadosPerfil?.mae?.nome]);
   const [mobileMenu, setMobileMenu] = useState(false);
 
   // Onboarding state
