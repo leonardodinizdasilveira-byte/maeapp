@@ -323,17 +323,13 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
 
   // Sincronizar com dadosPerfil quando ele mudar (carregamento async)
   useEffect(() => {
-    if (dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0) {
-      setMae(dadosPerfil.mae);
-      setFilhos(dadosPerfil.filhos);
-      setIsLoggedIn(true);
-    } else if (dadosPerfil === null) {
-      // Se dadosPerfil é null, ainda está carregando - não fazer nada
-    } else {
-      // Se dadosPerfil existe mas não tem mae/filhos, precisa fazer onboarding
-      setIsLoggedIn(false);
-    }
-  }, [dadosPerfil]);
+   if (dadosPerfil?.mae?.nome && dadosPerfil?.filhos?.length > 0) {
+    setMae(dadosPerfil.mae);
+    setFilhos(dadosPerfil.filhos);
+    setIsLoggedIn(true);
+  }
+  // NÃO faz nada se dadosPerfil é null ou vazio - espera carregar!
+}, [dadosPerfil?.mae?.nome, dadosPerfil?.filhos?.length]);
 
   // Salvar no Firebase quando dados mudarem
   useEffect(() => {
