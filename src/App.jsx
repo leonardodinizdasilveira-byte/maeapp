@@ -38,13 +38,14 @@ export default function App() {
   }, []);
 
   async function salvarPerfil(dados) {
-    if (!user) {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
       console.error("❌ Sem usuário");
       return;
     }
     try {
       console.log("💾 Salvando:", dados);
-      await setDoc(doc(db, "perfis", user.uid), dados, { merge: true });
+      await setDoc(doc(db, "perfis", currentUser.uid), dados, { merge: true });
       console.log("✅ Salvo!");
     } catch (error) {
       console.error("❌ Erro:", error);
