@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 // Configuração do Firebase do projeto MãeGuia DF (v2)
 const firebaseConfig = {
@@ -17,4 +17,9 @@ const app = initializeApp(firebaseConfig);
 
 // Serviços
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Firestore com long-polling automático: evita o erro "client is offline"
+// em redes/antivírus/firewalls que bloqueiam a conexão padrão (streaming) do Firestore.
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+});
