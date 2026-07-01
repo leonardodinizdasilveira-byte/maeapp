@@ -2318,28 +2318,12 @@ function TelaContatos({contatos, setContatos, novoContato, setNovoContato}) {
     {id:"escola", nome:"🏫 Escola/Creche", cor:"#e67e22"}
   ];
   
-    async function adicionarContato() {
-  if (!novoContato.nome || !novoContato.categoria || !novoContato.telefone) return;
-  const novoArray = [...contatos, {...novoContato, id:Date.now()}];
-  setContatos(novoArray);
-  setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
-  
-  // Salvar direto usando auth.currentUser
-  try {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      await setDoc(doc(db, "perfis", currentUser.uid), { mae, filhos, remedios, exames, atividades, registros, gastos, orcamento, contatos: novoArray }, { merge: true });
-      console.log("✅ Contato salvo!");
-    }
-  } catch (error) {
-    console.error("❌ Erro ao salvar:", error);
+  async function adicionarContato() {
+    if (!novoContato.nome || !novoContato.categoria || !novoContato.telefone) return;
+    const novoArray = [...contatos, {...novoContato, id:Date.now()}];
+    setContatos(novoArray);
+    setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
   }
-}
-  if (!novoContato.nome || !novoContato.categoria || !novoContato.telefone) return;
-  const novoArray = [...contatos, {...novoContato, id:Date.now()}];
-  setContatos(novoArray);
-  setNovoContato({ nome:"", categoria:"", telefone:"", especialidade:"", notas:"" });
-}
   const contatosPorCategoria = CATEGORIAS.map(c => ({
     ...c,
     contatos: contatos.filter(ct => ct.categoria === c.id)
