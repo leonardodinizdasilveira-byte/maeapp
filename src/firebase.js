@@ -2,14 +2,17 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Configuração do Firebase do projeto MãeGuia DF
+// Configuração do Firebase do projeto MãeGuia DF (projeto v2)
+// ⚠️ CONFIRME esta apiKey no Firebase Console (Configurações do projeto > Geral > Seus apps)
+// antes de commitar — no resumo da sessão anterior ela veio com um espaço no meio,
+// o que indica que pode ter sido corrompida ao copiar/colar.
 const firebaseConfig = {
-  apiKey: "AIzaSyAk2Vd623o4y4wV4uzOiMp0aYbSlPeSME4",
-  authDomain: "maeguia-df.firebaseapp.com",
-  projectId: "maeguia-df",
-  storageBucket: "maeguia-df.firebasestorage.app",
-  messagingSenderId: "914306179455",
-  appId: "1:914306179455:web:6fea85b1c7e9d2c1cbba4a"
+  apiKey: "AIzaSyBkcJwC3tULHXw_4BXHyOphobjpJZKenfY",
+  authDomain: "maeguia-df-v2.firebaseapp.com",
+  projectId: "maeguia-df-v2",
+  storageBucket: "maeguia-df-v2.firebasestorage.app",
+  messagingSenderId: "135046449368",
+  appId: "1:135046449368:web:127c18583dd86a0eb4b91d"
 };
 
 // Inicializar Firebase
