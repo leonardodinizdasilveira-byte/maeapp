@@ -5,10 +5,10 @@ import {
   Download, Eye, ChevronDown, ChevronRight, ChevronUp, ChevronLeft,
   AlertTriangle, Phone, Pill, X, Menu, Save, Send,
   Shield, Star, Clock, MapPin, Activity, Baby, Volume2, VolumeX, User, Mail,
-  Brain, DollarSign, PhoneCall, TrendingUp, PieChart, Zap, MessageCircle
+  Brain, DollarSign, PhoneCall, TrendingUp, PieChart, Zap, MessageCircle, Lock
 } from "lucide-react";
 import { auth, db } from "./firebase";
-import { deleteUser } from "firebase/auth";
+import { deleteUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, deleteDoc } from "firebase/firestore";
 
 // ─── DADOS INICIAIS ───────────────────────────────────────────────────────────
@@ -266,6 +266,8 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
 
   // Onboarding state
   const [onbStep, setOnbStep] = useState(1); // 1=mãe, 2=filho
+  const [senha, setSenha] = useState("");
+  const [criandoConta, setCriandoConta] = useState(false);
   const [novoFilho, setNovoFilho] = useState({ nome:"", idade:"", diagnosticos:[] });
   const [onbErrors, setOnbErrors] = useState({});
 
@@ -494,6 +496,7 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
     const errs = {};
     if (!mae.nome.trim()) errs.nome = "Obrigatório";
     if (!mae.email.includes("@")) errs.email = "E-mail inválido";
+    if (senha.trim().length < 6) errs.senha = "Mínimo 6 caracteres";
     if (mae.celular.replace(/\D/g,"").length < 10) errs.celular = "Celular inválido";
     if (!mae.regiao) errs.regiao = "Selecione sua RA";
     setOnbErrors(errs);
@@ -509,9 +512,46 @@ export default function MaeGuiaDF({ user, dadosPerfil, onSalvarPerfil }) {
   }
   async function finalizarOnboarding() {
     if (filhos.length === 0) { adicionarFilhoOnb(); return; }
-    // Salvar dados no Firebase antes de finalizar
-    await onSalvarPerfil({ mae, filhos });
-    setIsLoggedIn(true);
+
+    setCriandoConta(true);
+    setOnbErrors(prev => ({ ...prev, conta: undefined }));
+    try {
+      // 1) Garante que existe um usuário autenticado no Firebase Auth.
+      //    Sem isso, salvarPerfil() nunca teria um UID pra gravar no Firestore.
+      if (!auth.currentUser) {
+        try {
+          await createUserWithEmailAndPassword(auth, mae.email.trim(), senha);
+          console.log("✅ Conta criada no Firebase Auth");
+        } catch (error) {
+          if (error.code === "auth/email-already-in-use") {
+            // Já existe conta com esse e-mail: tenta logar em vez de cadastrar
+            await signInWithEmailAndPassword(auth, mae.email.trim(), senha);
+            console.log("✅ Login em conta existente");
+          } else {
+            throw error;
+          }
+        }
+      }
+
+      // 2) Só agora salva o perfil, com o usuário já autenticado
+      await onSalvarPerfil({ mae, filhos });
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error("❌ Erro ao criar conta:", error);
+      const mensagens = {
+        "auth/email-already-in-use": "Este e-mail já tem conta, mas a senha digitada está errada.",
+        "auth/weak-password": "Senha muito fraca. Use pelo menos 6 caracteres.",
+        "auth/invalid-email": "E-mail inválido.",
+        "auth/network-request-failed": "Falha de conexão. Verifique sua internet.",
+      };
+      setOnbErrors(prev => ({
+        ...prev,
+        conta: mensagens[error.code] || `Erro ao criar conta: ${error.message}`
+      }));
+      setOnbStep(1); // volta pro passo 1 pra mostrar o erro perto do e-mail/senha
+    } finally {
+      setCriandoConta(false);
+    }
   }
   function toggleDiag(d) {
     setNovoFilho(prev => ({
@@ -628,6 +668,7 @@ _Enviado via MãeGuia DF_ 💜`;
 
   if (!isLoggedIn) return <Onboarding
     step={onbStep} mae={mae} setMae={setMae} errors={onbErrors}
+    senha={senha} setSenha={setSenha} criandoConta={criandoConta}
     filhos={filhos} novoFilho={novoFilho} setNovoFilho={setNovoFilho}
     toggleDiag={toggleDiag} adicionarFilho={adicionarFilhoOnb}
     avancar={avancarOnboarding} finalizar={finalizarOnboarding}
@@ -872,7 +913,7 @@ function CampoTextarea({ icon, label, dica, cor="#3d9b7a", rows=4, value, onChan
   );
 }
 
-function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggleDiag,adicionarFilho,avancar,finalizar,setFilhos,sairEDeletarConta}) {
+function Onboarding({step,mae,setMae,errors,senha,setSenha,criandoConta,filhos,novoFilho,setNovoFilho,toggleDiag,adicionarFilho,avancar,finalizar,setFilhos,sairEDeletarConta}) {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{background:"#f6f8f7", padding:"24px 16px", fontFamily:"'Nunito', system-ui, sans-serif"}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');`}</style>
@@ -915,6 +956,16 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
               <CampoInput icon={<Mail size={19}/>} label="E-MAIL" erro={errors.email}>
                 <input style={inputBare} type="email" placeholder="seu@email.com" value={mae.email} onChange={e=>setMae(p=>({...p,email:e.target.value}))} />
               </CampoInput>
+
+              <CampoInput icon={<Lock size={19}/>} label="SENHA" erro={errors.senha} dica="Mínimo 6 caracteres. Você vai usar pra acessar de novo depois.">
+                <input style={inputBare} type="password" placeholder="Crie uma senha" value={senha} onChange={e=>setSenha(e.target.value)} />
+              </CampoInput>
+
+              {errors.conta && (
+                <div style={{background:"#fff0ef", border:"1.5px solid #fcc", borderRadius:12, padding:"10px 14px", color:"#c0392b", fontSize:14, fontWeight:600}}>
+                  ⚠️ {errors.conta}
+                </div>
+              )}
 
               <CampoInput icon={<Phone size={19}/>} label="CELULAR (WHATSAPP)" erro={errors.celular} dica="Necessário para o envio dos alertas diários.">
                 <input style={inputBare} type="tel" placeholder="(61) 9 9999-9999" value={mae.celular} onChange={e=>setMae(p=>({...p,celular:e.target.value}))} />
@@ -994,8 +1045,8 @@ function Onboarding({step,mae,setMae,errors,filhos,novoFilho,setNovoFilho,toggle
               </div>
             </div>
 
-            <button onClick={finalizar} disabled={filhos.length===0&&!novoFilho.nome} style={{width:"100%", padding:"17px", fontSize:15, fontWeight:800, letterSpacing:0.5, textTransform:"uppercase", color:"white", border:"none", borderRadius:18, cursor:"pointer", fontFamily:"inherit", background:"linear-gradient(135deg,#3d9b7a,#5bb89a)", boxShadow:"0 6px 18px rgba(61,155,122,0.32)", opacity: (filhos.length===0&&!novoFilho.nome) ? 0.45 : 1, transition:"opacity .2s"}}>
-              Salvar Cadastro e Entrar ✨
+            <button onClick={finalizar} disabled={(filhos.length===0&&!novoFilho.nome) || criandoConta} style={{width:"100%", padding:"17px", fontSize:15, fontWeight:800, letterSpacing:0.5, textTransform:"uppercase", color:"white", border:"none", borderRadius:18, cursor:"pointer", fontFamily:"inherit", background:"linear-gradient(135deg,#3d9b7a,#5bb89a)", boxShadow:"0 6px 18px rgba(61,155,122,0.32)", opacity: ((filhos.length===0&&!novoFilho.nome) || criandoConta) ? 0.45 : 1, transition:"opacity .2s"}}>
+              {criandoConta ? "Criando conta... ⏳" : "Salvar Cadastro e Entrar ✨"}
             </button>
           </div>
         )}
